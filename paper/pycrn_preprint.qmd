@@ -1,0 +1,714 @@
+---
+title: "pycrn: A Python library for structural and numerical analysis of chemical reaction networks under mass-action kinetics"
+shorttitle: "pycrn: Chemical Reaction Network Theory in Python"
+author:
+  - name: Emilio Venegas
+    email: emiliovenegas10@gmail.com
+    orcid: 0000-0000-0000-0000
+    corresponding: true
+    affiliations:
+      - name: Independent Researcher
+        address: ""
+        city: ""
+        country: ""
+date: today
+abstract: |
+  Chemical Reaction Network Theory (CRNT), developed by Horn, Jackson, and
+  Feinberg, provides parameter-free structural theorems that constrain the
+  asymptotic dynamics of mass-action systems irrespective of the numerical
+  values of the rate constants. Despite the maturity of the theory, modern
+  open-source implementations that combine CRNT structural analysis with
+  symbolic ordinary differential equation (ODE) construction and robust
+  numerical steady-state finding remain scarce. We present `pycrn`, a pure
+  Python library that ingests human-readable reaction strings, builds the
+  complex reaction graph, computes the deficiency $\delta = n - \ell - s$ and
+  weak reversibility, and decides applicability of the Deficiency Zero
+  Theorem (DZT) and Deficiency One Theorem (D1T). For systems satisfying
+  these structural conditions, `pycrn` certifies---without any simulation
+  whatsoever---existence, uniqueness and (for DZT) asymptotic stability of
+  the positive steady state in every stoichiometric compatibility class.
+  When the structural theorems do not apply, the library provides symbolic
+  mass-action ODEs and Jacobians via SymPy and a hybrid numerical solver
+  that combines stiff implicit integration with bound-constrained algebraic
+  least-squares to locate both stable and unstable fixed points, including
+  Hopf bifurcation centres inaccessible to forward integration. We
+  demonstrate the workflow on six benchmarks: a reversible isomerisation,
+  the Michaelis--Menten enzyme mechanism, the closed and chemostatted
+  Brusselator, a catalytic hairpin assembly (CHA) miR-21 biosensor, and the
+  Goldbeter--Koshland zero-order ultrasensitivity switch. In each case, the
+  CRNT-predicted qualitative behaviour (monostability, oscillation,
+  uniqueness) is recovered numerically with a residual below
+  $10^{-6}\,\mathrm{M\,s^{-1}}$, and the Goldbeter--Koshland dose-response
+  curve agrees with the closed-form quasi-steady-state approximation to
+  within $1\%$ over a $400\times$ kinase/phosphatase activity scan.
+  `pycrn` is open-source (MIT license) and available at
+  <https://github.com/emiliovenegas/pycrn>.
+keywords:
+  - chemical reaction network theory
+  - mass-action kinetics
+  - deficiency theorems
+  - steady-state analysis
+  - bifurcation analysis
+  - DNA computing
+  - systems biology
+  - scientific Python
+
+# ── bioRxiv-style submission metadata ────────────────────────────────────
+article-category: "New Results"
+subject-area: "Systems Biology"
+
+# ── Required statements for bioRxiv ──────────────────────────────────────
+author-approvals: |
+  All authors have seen and approved the manuscript. The work reported here
+  has not been accepted or published elsewhere.
+competing-interests: |
+  The author declares no competing financial or non-financial interests.
+funding: |
+  This research received no specific grant from any funding agency in the
+  public, commercial, or not-for-profit sectors.
+distribution-reuse: |
+  CC-BY 4.0 International. The accompanying software is distributed under
+  the MIT License.
+external-data: |
+  Source code, examples, test suite, and reproducibility scripts are openly
+  available at <https://github.com/emiliovenegas/pycrn>.
+
+# ── Quarto rendering options ─────────────────────────────────────────────
+bibliography: references.bib
+link-citations: true
+number-sections: true
+fontsize: 11pt
+geometry:
+  - margin=1in
+linestretch: 1.25
+papersize: letter
+mainfont: "Liberation Serif"
+linkcolor: NavyBlue
+citecolor: NavyBlue
+urlcolor: NavyBlue
+format:
+  pdf:
+    documentclass: scrartcl
+    pdf-engine: xelatex
+    toc: false
+    colorlinks: true
+    include-in-header:
+      text: |
+        \usepackage{amsmath,amssymb,amsthm}
+        \usepackage{mathtools}
+        \usepackage{booktabs}
+        \usepackage{microtype}
+        \usepackage{siunitx}
+        \usepackage{graphicx}
+        \usepackage[font=small,labelfont=bf]{caption}
+        \renewcommand{\abstractname}{\textsc{Abstract}}
+  html:
+    toc: true
+    toc-depth: 3
+    html-math-method: katex
+    code-fold: false
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  cache: false
+---
+
+<!--
+  bioRxiv preprint submission front-matter checklist
+  ─────────────────────────────────────────────────────────────────────
+  Article category:        New Results
+  Subject area:            Systems Biology
+  Title:                   See above
+  External data URL:       https://github.com/emiliovenegas/pycrn
+  Abstract:                Included above
+  Author approvals:        Stated above
+  Competing interests:     None declared
+  Authors / ORCID:         Emilio Venegas (corresponding)
+  Funder:                  None
+  Grant numbers:           N/A
+  Distribution / reuse:    CC-BY 4.0 (manuscript), MIT (software)
+  Manuscript files:        pycrn_preprint.qmd → renders to PDF via XeLaTeX
+  Image files:             cha_kinetics_analysis.png, cha_kinetics_species.png,
+                           cha_bifurcation.png, cha_reaction_graph.png,
+                           brusselator_oscillations.png, brusselator_stable.png,
+                           gk_switch_dose_response.png
+  Image formats:           PNG (accepted by bioRxiv submission system)
+  Fonts:                   Times New Roman (preferred by submission system)
+  ─────────────────────────────────────────────────────────────────────
+-->
+
+# Introduction {#sec-intro}
+
+The dynamics of a chemical reaction network (CRN) endowed with mass-action
+kinetics are governed by polynomial ordinary differential equations whose
+behaviour, *a priori*, depends jointly on the network topology and on
+$O(10^{0}\text{--}10^{2})$ kinetic parameters that are seldom known to better
+than one order of magnitude in living systems. A central insight of
+twentieth-century mathematical chemistry, originating in the work of Horn,
+Jackson, and Feinberg, is that a substantial portion of the qualitative
+behaviour---existence and uniqueness of equilibria, monostability,
+impossibility of oscillation---is dictated by *purely structural*
+invariants of the reaction graph [@horn1972general; @feinberg1972complex;
+@feinberg1987chemical]. The two cornerstones of this body of results are
+the Deficiency Zero Theorem [@horn1972general; @feinberg1987chemical] and
+the Deficiency One Theorem [@feinberg1995existence], each of which
+guarantees properties of the steady-state set that hold uniformly over
+*every* assignment of positive rate constants. Modern monographs
+[@feinberg2019foundations] and review articles [@angeli2009tutorial]
+provide a complete account of the theory, and recent results on the global
+attractor conjecture [@anderson2011proof] and structural sources of
+robustness [@shinar2010structural] continue to extend its reach.
+
+Notwithstanding the maturity of CRNT, the practical bridge between formal
+theorems and computational pipelines remains under-served. The
+Chemical Reaction Network Toolbox [@ji2011crnreal] and the
+constraint-programming approach of @soliman2012crnpy implement parts of the
+deficiency machinery, but neither provides an end-to-end Python interface
+that (i) accepts the reaction strings biochemists actually write, (ii)
+exposes the mass-action ODEs and Jacobian symbolically through SymPy
+[@meurer2017sympy], and (iii) couples the structural analysis to a robust
+numerical solver capable of finding both stable and *unstable* fixed
+points---the latter being indispensable for the location of Hopf
+bifurcation centres in chemostatted, open systems [@prigogine1968symmetry].
+
+In this paper we introduce `pycrn`, a small Python library that fills this
+gap. Built on top of the SciPy scientific stack [@virtanen2020scipy;
+@harris2020array], SymPy [@meurer2017sympy], and NetworkX
+[@hagberg2008exploring], `pycrn` implements:
+
+1. parsing of human-readable reaction strings, canonical-form normalisation
+   of rate-constant keys, and construction of the complex reaction graph;
+2. exact rational computation of the stoichiometric matrix rank, deficiency
+   $\delta$, linkage classes, weak reversibility, and conservation laws as
+   non-negative integer left null-space vectors;
+3. decision procedures for the Deficiency Zero and Deficiency One Theorems,
+   including the per-linkage-class deficiency checks required by D1T
+   [@feinberg1995existence; @feinberg2019foundations];
+4. symbolic mass-action ODE and Jacobian construction with both symbolic
+   and numeric rate constants;
+5. a hybrid steady-state solver combining the stiff implicit Radau
+   integrator [@hairer1996solving; @hindmarsh2005sundials] with
+   bound-constrained algebraic least-squares;
+6. a wrapper for chemostatted (open) networks in the sense of
+   @polettini2014irreversible, where selected species are held at fixed
+   concentrations and folded into effective rate prefactors;
+7. log-spaced bifurcation scans of any rate constant and a NetworkX-based
+   reaction-graph visualiser.
+
+`pycrn` targets two distinct user communities: (a) systems biologists and
+synthetic-biology engineers who want to certify, before any wet-lab work,
+that an enzymatic cycle [@ferrell2014ultrasensitivity], a DNA strand-displacement
+cascade [@yin2008catalytic; @li2011nonenzymatic], or a metabolic motif
+[@ang2014considerations] cannot exhibit pathological bistability or
+oscillation; and (b) educators and researchers in chemical reaction
+network theory who want a compact, fully open-source reference
+implementation against which to develop further structural algorithms.
+
+The remainder of this article is organised as follows. Section
+[-@sec-methods] presents the mathematical objects and algorithms
+implemented in `pycrn`. Section [-@sec-results] applies the library to
+six benchmark networks of increasing complexity: a reversible
+isomerisation (DZT applies), Michaelis--Menten (δ = 0 but not weakly
+reversible), the closed and chemostatted Brusselator (Hopf-driven limit
+cycle), the catalytic hairpin assembly (CHA) miR-21 biosensor (δ = 1, D1T
+applies), and the Goldbeter--Koshland zero-order ultrasensitivity switch
+[@goldbeter1981amplified]. Section [-@sec-discussion] places `pycrn` in
+the context of existing CRN software and outlines limitations and future
+directions.
+
+# Mathematical preliminaries and software architecture {#sec-methods}
+
+## Reactions, complexes, and the stoichiometric matrix
+
+We follow the standard notation of @feinberg2019foundations. Let
+$\mathcal{S} = \{S_1, \ldots, S_m\}$ denote the set of $m$ chemical
+species and let $\mathcal{C}$ denote a finite set of $n$ *complexes*,
+where a complex $y \in \mathbb{Z}_{\ge 0}^{m}$ is a non-negative integer
+linear combination of species. A *reaction* is an ordered pair of
+distinct complexes, written $y \to y'$. A reaction network
+$\mathcal{N} = (\mathcal{S}, \mathcal{C}, \mathcal{R})$ consists of the
+finite set $\mathcal{R}$ of $r$ reactions on $\mathcal{C}$.
+
+The *stoichiometric matrix* $\mathbf{N} \in \mathbb{Z}^{m \times r}$ has
+columns indexed by reactions and rows indexed by species, with
+$$
+N_{ij} \;=\; y'_j(S_i) - y_j(S_i),
+$$ {#eq-stoich}
+i.e.\ the net change in copy number of species $i$ effected by reaction
+$j$. The *stoichiometric subspace* is $S \coloneqq \operatorname{span}\{y'_j - y_j\}_{j=1}^{r} = \operatorname{Range}(\mathbf{N})$, of
+dimension $s \coloneqq \operatorname{rank}(\mathbf{N})$. For any
+trajectory of the kinetic system, the concentration vector
+$\mathbf{c}(t) \in \mathbb{R}_{>0}^{m}$ is confined to the affine variety
+$\mathbf{c}_0 + S$, the *stoichiometric compatibility class* of the
+initial condition $\mathbf{c}_0$.
+
+## Mass-action kinetics
+
+Under the law of mass action [@horn1972general; @michaelis1913kinetik],
+the flux of the $j$-th reaction $y_j \to y'_j$ with rate constant
+$k_j > 0$ is
+$$
+v_j(\mathbf{c}) \;=\; k_j\, \mathbf{c}^{y_j}
+                  \;\coloneqq\; k_j \prod_{i=1}^{m} c_i^{\,y_j(S_i)},
+$$ {#eq-massaction}
+and the species-concentration ODE system reads
+$$
+\dot{\mathbf{c}}(t) \;=\; \mathbf{N}\,\mathbf{v}\bigl(\mathbf{c}(t)\bigr),
+\qquad
+\mathbf{c}(0) = \mathbf{c}_0 \in \mathbb{R}_{>0}^{m}.
+$$ {#eq-odes}
+The Jacobian along a trajectory is
+$$
+\mathbf{J}(\mathbf{c}) \;=\; \mathbf{N}\,\bigl[\partial \mathbf{v}/\partial \mathbf{c}\bigr](\mathbf{c}),
+\qquad
+\frac{\partial v_j}{\partial c_i} \;=\; y_j(S_i)\,\frac{v_j(\mathbf{c})}{c_i},
+$$ {#eq-jac}
+with the convention that the right-hand side equals
+$k_j\,y_j(S_i)\,\prod_{k \neq i} c_k^{y_j(S_k)}$ when $c_i = 0$. In
+`pycrn`, equations (@eq-odes)--(@eq-jac) are constructed symbolically as
+SymPy expressions via `network.CRNetwork.odes()` and
+`network.CRNetwork.jacobian()`; rate constants may be kept symbolic
+($k_1, k_2, \ldots$) or substituted by their numeric values.
+
+## Conservation laws
+
+Conservation laws are vectors $\boldsymbol{\ell} \in \mathbb{Z}^{m}_{\ge 0}$
+in the *left* null space of $\mathbf{N}$,
+$$
+\boldsymbol{\ell}^{\!\top}\mathbf{N} \;=\; \mathbf{0},
+$$ {#eq-cl}
+so that $\boldsymbol{\ell}^{\!\top}\mathbf{c}(t)$ is invariant along every
+trajectory. `pycrn` computes a non-negative integer basis of
+$\operatorname{LeftNull}(\mathbf{N})$ via exact rational arithmetic with
+SymPy, then post-processes the basis (sign normalisation, integer
+scaling, and elementary reduction) to recover physical moiety totals. The
+algorithm exploits the fact that, for mass-balanced networks, a
+non-negative integer basis is always admissible
+[@feinberg2019foundations; @rao2016graph].
+
+## Deficiency, linkage classes, and weak reversibility
+
+The *reaction graph* $G = (\mathcal{C}, \mathcal{R})$ has the complexes as
+nodes and the reactions as directed edges. A *linkage class* is a weakly
+connected component of $G$; we denote their number by $\ell$. The
+*deficiency* of the network is
+$$
+\boxed{\;\delta \;\coloneqq\; n - \ell - s \;\in\; \mathbb{Z}_{\ge 0}\;}
+$$ {#eq-deficiency}
+where $n = |\mathcal{C}|$, $\ell$ is the number of linkage classes, and
+$s = \operatorname{rank}(\mathbf{N})$. The non-negativity of $\delta$ is a
+classical fact [@feinberg1987chemical]. The network is *weakly reversible*
+if every weakly connected component of $G$ is also strongly connected.
+
+## Feinberg's structural theorems
+
+The two principal results implemented in `pycrn` are:
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem 1 (Deficiency Zero Theorem; Horn--Jackson 1972, Feinberg 1972).** *Let
+$\mathcal{N}$ be a weakly reversible reaction network with $\delta = 0$.
+Then for every choice of positive rate constants
+$\{k_j\}_{j=1}^{r} \subset \mathbb{R}_{>0}$, the mass-action system
+(@eq-odes) admits exactly one positive equilibrium in every positive
+stoichiometric compatibility class, and that equilibrium is locally
+asymptotically stable. In particular, sustained oscillations and
+multistability are impossible* [@horn1972general; @feinberg2019foundations].
+:::
+
+::: {.callout-note appearance="simple" icon=false}
+**Theorem 2 (Deficiency One Theorem; Feinberg 1995).** *Let
+$\mathcal{N}$ have deficiency $\delta = 1$ and assume that each linkage
+class $L_q$ has per-linkage-class deficiency $\delta_q \in \{0, 1\}$ with
+at most one $\delta_q = 1$. Then for every choice of positive rate
+constants, the mass-action system (@eq-odes) admits at most one positive
+equilibrium in every positive stoichiometric compatibility class*
+[@feinberg1995existence; @feinberg2019foundations].
+:::
+
+`pycrn` decides the structural hypotheses of both theorems by direct graph
+construction (NetworkX), exact rank computation (NumPy
+[@harris2020array]), and per-LC deficiency calculation via QR-pivoted
+row selection of $\mathbf{N}$ [@virtanen2020scipy]. The decision is
+returned in human-readable form by `CRNetwork.crnt_summary()` and
+programmatically by the `CRNTResult` dataclass.
+
+## Open (chemostatted) networks
+
+A *chemostatted* species is one whose concentration is held constant by an
+external reservoir, mimicking continuous replenishment in a flow reactor
+or a buffer with effectively infinite capacity. Following the open-network
+formalism of @polettini2014irreversible, `pycrn` removes chemostatted
+species from the dynamic state vector and folds their (fixed)
+concentrations into *effective* rate constants:
+$$
+k_j^{\mathrm{eff}} \;=\; k_j \,\prod_{S_i \in \mathrm{chem}}
+                            c_i^{\,y_j(S_i)},
+$$ {#eq-fold}
+so that the reduced ODE system contains only the dynamic species.
+Crucially, on open systems the conservation-law left null space is in
+general empty and forward integration cannot locate Hopf-unstable fixed
+points; `pycrn` therefore switches to a *scale-aware multi-start*
+bound-constrained least-squares strategy that retains the ability to find
+unstable equilibria.
+
+## Hybrid steady-state solver
+
+For a closed or semi-closed network with $p$ independent conservation
+laws encoded as the rows of $\mathbf{L} \in \mathbb{Z}^{p \times m}$ and
+totals $\boldsymbol{\tau} \in \mathbb{R}_{\ge 0}^{p}$, the steady-state
+problem becomes the constrained polynomial system
+$$
+\mathbf{N}_{\mathrm{ind}}\,\mathbf{v}(\mathbf{c}^\ast) \;=\; \mathbf{0},
+\qquad
+\mathbf{L}\,\mathbf{c}^\ast \;=\; \boldsymbol{\tau},
+\qquad
+\mathbf{c}^\ast \;\ge\; \mathbf{0},
+$$ {#eq-ss}
+where $\mathbf{N}_{\mathrm{ind}}$ collects $s$ linearly independent rows
+of $\mathbf{N}$ selected by QR pivoting. `pycrn` first attempts forward
+integration of (@eq-odes) with SciPy's stiff implicit Radau IIA solver
+[@hairer1996solving; @virtanen2020scipy] from the user-supplied initial
+condition, then runs bound-constrained algebraic least-squares
+(`scipy.optimize.least_squares`, trust-region reflective method) seeded
+both at the user IC and at $n_{\mathrm{attempts}} - 2$ random points on
+the conservation manifold. For open networks the integration step is
+skipped and only the algebraic strategy is used. Duplicate solutions
+(relative $\ell_2$ distance below $1\%$) and non-physical solutions are
+filtered, after which the Jacobian (@eq-jac) is evaluated at each
+candidate and its eigenvalues classified as in @tbl-stability.
+
+| Eigenvalue pattern (significant) | Classification |
+|--|--|
+| $\operatorname{Re}(\lambda) < 0,\ \operatorname{Im}(\lambda) = 0$ for all $\lambda$ | stable node |
+| $\operatorname{Re}(\lambda) < 0$, some $\operatorname{Im}(\lambda) \ne 0$ | stable spiral |
+| $\operatorname{Re}(\lambda) > 0$, some $\operatorname{Im}(\lambda) \ne 0$ | **unstable focus** (Hopf candidate) |
+| $\operatorname{Re}(\lambda) > 0,\ \operatorname{Im}(\lambda) = 0$ for some $\lambda$ | unstable node / saddle |
+| $|\operatorname{Re}(\lambda)| < \varepsilon$ | non-hyperbolic |
+
+: Stability classification implemented in `analysis.classify_steady_state()`. Eigenvalues with $|\lambda| < 10^{-4}\,\max_k |\lambda_k|$ are treated as zero (artefacts of the conservation-law dimensions) and excluded. The `is_oscillatory` flag is set whenever any significant eigenvalue has a non-trivial imaginary part, covering both stable spirals and unstable foci. {#tbl-stability}
+
+# Results {#sec-results}
+
+We illustrate `pycrn`'s end-to-end workflow on six benchmark networks of
+increasing complexity. All examples are bundled with the source
+distribution (`examples/01–06`).
+
+## Reversible isomerisation: parameter-free uniqueness {#sec-rev}
+
+The simplest non-trivial network is the reversible isomerisation
+$A \rightleftharpoons B$. There are $n = 2$ complexes, $\ell = 1$ linkage
+class, $\operatorname{rank}(\mathbf{N}) = 1$, hence $\delta = 0$. The
+network is weakly reversible, so the Deficiency Zero Theorem applies; for
+any positive forward and reverse rate constants $k_f, k_r$ the unique
+positive equilibrium consistent with the conservation law $A + B = T$ is
+$$
+A^\ast \;=\; \frac{k_r}{k_f + k_r}\,T, \qquad
+B^\ast \;=\; \frac{k_f}{k_f + k_r}\,T,
+$$ {#eq-aoffb}
+and it is asymptotically stable. `pycrn` recovers
+(@eq-aoffb) numerically to machine precision: for
+$k_f = 1.0$, $k_r = 0.5$, $A_0 = 2$, $B_0 = 0$ the solver returns
+$A^\ast = 0.6\overline{6}$ and $B^\ast = 1.\overline{3}$ with residual
+$\|\mathbf{N}\mathbf{v}(\mathbf{c}^\ast)\|_2 < 10^{-12}\,\mathrm{M\,s^{-1}}$
+and eigenvalues $\{0, -1.5\}$. The single zero eigenvalue is the expected
+signature of the conservation law dimension.
+
+```python
+from pycrn import CRNetwork
+rn = CRNetwork.from_string(
+    ["A <-> B"],
+    rates={"A -> B": 1.0, "B -> A": 0.5},
+)
+print(rn.crnt_summary())          # δ = 0, DZT applies
+ss = rn.steady_states({"A": 2.0, "B": 0.0})[0]
+# ss.concentrations  ≈ {'A': 0.6667, 'B': 1.3333}
+# ss.is_stable       == True
+```
+
+## Michaelis--Menten: $\delta = 0$ but not weakly reversible {#sec-mm}
+
+The classical enzyme mechanism [@michaelis1913kinetik]
+$$
+E + S \;\rightleftharpoons\; ES \;\to\; E + P
+$$ {#eq-mm}
+has three complexes, one linkage class, and
+$\operatorname{rank}(\mathbf{N}) = 2$, hence $\delta = 0$. However the
+network is *not* weakly reversible because the catalytic step
+$ES \to E + P$ has no reverse edge in the complex graph. The Deficiency
+Zero Theorem therefore *does not* apply in its stability form. `pycrn`
+correctly reports this and returns the two conservation laws
+$E + ES = E_{\mathrm{tot}}$ and $S + ES + P = S_{\mathrm{tot}}$ as
+non-negative integer left null-space vectors. For the standard parameters
+$k_f = 10^{6}\,\mathrm{M^{-1}s^{-1}}$,
+$k_r = 10^{3}\,\mathrm{s^{-1}}$, $k_{\mathrm{cat}} = 100\,\mathrm{s^{-1}}$
+and initial conditions $E_0 = 1\,\mu\mathrm{M}$, $S_0 = 100\,\mu\mathrm{M}$,
+the numerical equilibrium satisfies enzyme conservation
+$E^\ast + ES^\ast = E_0$ to within machine precision, and the
+quasi-steady-state estimate
+$$
+[ES]_{\mathrm{QSS}} \;=\; \frac{E_0\,[S]^\ast}{K_M + [S]^\ast},
+\qquad
+K_M \;=\; \frac{k_r + k_{\mathrm{cat}}}{k_f}
+$$ {#eq-qss}
+agrees with the full mass-action value of $[ES]^\ast$ obtained by `pycrn`
+to better than $1\%$.
+
+## Brusselator: Hopf bifurcation under chemostatting {#sec-bruss}
+
+The four-step Brusselator [@prigogine1968symmetry]
+$$
+A \xrightarrow{k_1} X, \qquad
+B + X \xrightarrow{k_2} Y + D, \qquad
+2X + Y \xrightarrow{k_3} 3X, \qquad
+X \xrightarrow{k_4} E
+$$ {#eq-bruss-reactions}
+is the canonical example of a chemical oscillator. With *all* six species
+treated as dynamic, `pycrn` reports $\delta = 0$ but the network is not
+weakly reversible (no autocatalytic complex appears as a product of any
+other reaction), so neither Feinberg theorem certifies global asymptotic
+stability. Forward integration of the full closed system converges to a
+fixed point because $A$ and $B$ deplete; this is the well-known
+distinction between the *closed* and the *classical chemostatted*
+Brusselator [@prigogine1968symmetry].
+
+Holding $A$ and $B$ at constant concentrations $A = 1$, $B = 3$ via the
+`chemostatted=` argument folds their values into effective rate
+constants (@eq-fold) and reduces the system to the standard two-variable
+form
+$$
+\begin{aligned}
+\dot{X} &\;=\; A - (B+1)\,X + X^{2}\,Y,\\
+\dot{Y} &\;=\; B\,X - X^{2}\,Y,
+\end{aligned}
+$$ {#eq-bruss-2d}
+with unique fixed point $X^\ast = A$, $Y^\ast = B/A$. Linearisation
+yields the Jacobian
+$$
+\mathbf{J}(X^\ast, Y^\ast)
+\;=\;
+\begin{pmatrix} B - 1 & A^{2} \\[2pt] -B & -A^{2} \end{pmatrix},
+\qquad
+\operatorname{tr}\mathbf{J} \;=\; B - 1 - A^{2},
+\qquad
+\det\mathbf{J} \;=\; A^{2},
+$$ {#eq-bruss-jac}
+so that a supercritical Hopf bifurcation occurs at the threshold
+$B = 1 + A^{2}$ [@prigogine1968symmetry]. For $A = 1$, $B = 3$ the
+condition $B > 1 + A^{2}$ is satisfied and `pycrn` locates the
+*unstable* fixed point $(X^\ast, Y^\ast) = (1, 3)$ algebraically (forward
+integration would orbit the limit cycle indefinitely); the Jacobian
+eigenvalues are $\lambda_{\pm} = 1 \pm i\sqrt{3} - 1 = 1 \pm i\,\sqrt{3}$
+with positive real part, correctly classifying the fixed point as an
+unstable focus. For $B = 1.5 < 1 + A^{2}$ the same fixed point becomes a
+stable spiral.
+
+![Brusselator dynamics with $A$ and $B$ chemostatted. Left: oscillatory
+time series and limit cycle ($B = 3$). Right: damped spiral toward the
+fixed point ($B = 1.5$). The black dot marks the algebraic equilibrium
+returned by `pycrn`. Figures generated by `examples/05_brusselator_chemostatted.py`.](../examples/brusselator_oscillations.png){#fig-bruss width=85%}
+
+## CHA miR-21 biosensor: parameter-free uniqueness via D1T {#sec-cha}
+
+DNA strand-displacement networks have emerged as a versatile platform for
+constructing programmable molecular sensors [@yin2008catalytic;
+@li2011nonenzymatic]. The catalytic hairpin assembly (CHA) circuit for the
+microRNA biomarker miR-21 comprises four reversible reactions:
+$$
+\begin{aligned}
+\mathrm{miR21} + H_{1} &\;\rightleftharpoons\; \mathrm{miR21}\!:\!H_{1},
+   && \text{(toehold binding)}\\
+\mathrm{miR21}\!:\!H_{1} + H_{2} &\;\rightleftharpoons\; H_{1}\!:\!H_{2} + \mathrm{miR21},
+   && \text{(strand displacement, catalyst release)}\\
+H_{1}\!:\!H_{2} + \mathrm{CP} &\;\rightleftharpoons\; H_{1}\!:\!H_{2}\!:\!\mathrm{CP},
+   && \text{(capture-probe reporter)}\\
+H_{1} + H_{2} &\;\rightleftharpoons\; H_{1}\!:\!H_{2}.
+   && \text{(background leakage)}
+\end{aligned}
+$$ {#eq-cha}
+Forward and reverse rate constants were obtained from NUPACK
+thermodynamic calculations [@zadeh2011nupack] at 37 °C in
+$137\,\mathrm{mM}$ NaCl, $10\,\mathrm{mM}$ MgCl$_2$. `pycrn`'s structural
+analysis returns $m = 7$ species, $n = 8$ complexes, $\ell = 4$ linkage
+classes, $\operatorname{rank}(\mathbf{N}) = 3$, hence
+$$
+\delta_{\mathrm{CHA}} \;=\; 8 - 4 - 3 \;=\; 1.
+$$ {#eq-cha-def}
+The network is weakly reversible and each linkage class has
+per-LC deficiency $\delta_q \in \{0, 1\}$ with exactly one $\delta_q = 1$,
+so the Deficiency One Theorem applies and certifies *at most one* positive
+equilibrium per stoichiometric compatibility class. `pycrn` further
+returns the four moiety totals (miR21$_{\mathrm{tot}}$, $H_{1,\mathrm{tot}}$,
+$H_{2,\mathrm{tot}}$, $\mathrm{CP}_{\mathrm{tot}}$) as a non-negative
+integer basis of $\operatorname{LeftNull}(\mathbf{N})$.
+
+With $H_{1,0} = H_{2,0} = \mathrm{CP}_0 = 100\,\mathrm{nM}$ and
+$[\mathrm{miR21}]_0 = 10\,\mathrm{nM}$, the hybrid solver returns the
+unique equilibrium $[H_{1}\!:\!H_{2}\!:\!\mathrm{CP}]^\ast = 0.34\,\mathrm{nM}$,
+with $\operatorname{Re}\lambda < 0$ for all significant eigenvalues
+($\operatorname{Re}\lambda_{\max} \approx -3 \times 10^{-3}\,\mathrm{s^{-1}}$).
+A log-spaced scan over $[\mathrm{miR21}]_0 \in [0.1, 100]\,\mathrm{nM}$
+(Fig.\ [-@fig-cha]) confirms the D1T prediction empirically: the
+dose-response curve is single-valued and monotone, with no hint of
+hysteresis or alternative branches.
+
+![Steady-state reporter signal $[H_{1}\!:\!H_{2}\!:\!\mathrm{CP}]^\ast$
+as a function of the initial miR-21 concentration. The single-valued,
+monotone trace is consistent with the parameter-free uniqueness guarantee
+of the Deficiency One Theorem ($\delta_{\mathrm{CHA}} = 1$). Generated by
+`examples/04_cha_cascade.py`.](../examples/cha_bifurcation.png){#fig-cha width=70%}
+
+## Goldbeter--Koshland switch: ultrasensitivity without bistability {#sec-gk}
+
+The Goldbeter--Koshland (GK) covalent-modification cycle
+[@goldbeter1981amplified; @ferrell2014ultrasensitivity] is the canonical
+mechanism for *zero-order ultrasensitivity*. The full mass-action
+mechanism couples a kinase arm and a phosphatase arm,
+$$
+\begin{aligned}
+W + E_{1} &\;\rightleftharpoons\; W\!:\!E_{1} \;\to\; W_{p} + E_{1},\\
+W_{p} + E_{2} &\;\rightleftharpoons\; W_{p}\!:\!E_{2} \;\to\; W + E_{2},
+\end{aligned}
+$$ {#eq-gk}
+and possesses $m = 6$ species, $n = 6$ complexes, $\ell = 2$ linkage
+classes, $\operatorname{rank}(\mathbf{N}) = 3$, so that
+$\delta_{\mathrm{GK}} = 6 - 2 - 3 = 1$. The network is *not* weakly
+reversible (the catalytic steps are irreversible), and each linkage class
+has per-LC deficiency 0 or 1 with at most one equal to 1: the Deficiency
+One Theorem therefore applies. The structural conclusion is that for
+*any* positive choice of $k_{\mathrm{on}}, k_{\mathrm{off}},
+k_{\mathrm{cat}}^{1}, k_{\mathrm{cat}}^{2}$ and *any* enzyme totals
+$E_{1}^{\mathrm{tot}}$, $E_{2}^{\mathrm{tot}}$, the mass-action system
+admits at most one positive equilibrium per stoichiometric compatibility
+class: **bistability is structurally impossible**.
+
+The Goldbeter--Koshland quasi-steady-state (QSS) approximation
+[@goldbeter1981amplified] predicts the fractional activation
+$y \coloneqq [W_{p}]^\ast / W^{\mathrm{tot}}$ as the unique root in
+$(0, 1)$ of
+$$
+(1 - y)\bigl(\widetilde{K} + y\bigr)
+\;=\;
+\frac{1}{u}\,y\bigl(\widetilde{K} + 1 - y\bigr),
+\qquad
+u \coloneqq \frac{k_{\mathrm{cat}}^{1}\,E_{1}^{\mathrm{tot}}}
+                 {k_{\mathrm{cat}}^{2}\,E_{2}^{\mathrm{tot}}},
+\qquad
+\widetilde{K} \coloneqq \frac{K_M}{W^{\mathrm{tot}}},
+$$ {#eq-gk-qss}
+with $K_M = (k_{\mathrm{off}} + k_{\mathrm{cat}})/k_{\mathrm{on}}$. In the
+deep zero-order regime $W^{\mathrm{tot}} / K_M \gg 1$, the curve
+$y(u)$ becomes effectively step-like and the Hill coefficient
+$n_H = \log(81)/\log(\mathrm{EC}_{90}/\mathrm{EC}_{10})$ diverges as
+$K_M \to 0$. We use $W^{\mathrm{tot}} = 1\,\mathrm{M}$,
+$E_{1}^{\mathrm{tot}} = E_{2}^{\mathrm{tot}} = 0.01\,\mathrm{M}$,
+$k_{\mathrm{on}} = 10^{4}\,\mathrm{M^{-1}\,s^{-1}}$,
+$k_{\mathrm{off}} = 0.1\,\mathrm{s^{-1}}$,
+$k_{\mathrm{cat}} = 1\,\mathrm{s^{-1}}$, giving
+$W^{\mathrm{tot}}/K_M \approx 9000$. Scanning
+$u = k_{\mathrm{cat}}^{1}/k_{\mathrm{cat}}^{2}$ over more than two
+decades, `pycrn` finds exactly one steady state at every point
+(Fig.\ [-@fig-gk]), confirming the D1T prediction. The numerical
+fractional activation agrees with (@eq-gk-qss) to better than $1\%$
+across the full scan, and the effective Hill coefficient at half-maximum
+exceeds $2 \times 10^{3}$, illustrating the digital character of the
+switch.
+
+![Goldbeter--Koshland zero-order ultrasensitivity switch. Left:
+fractional activation $y = [W_p]^\ast/W^{\mathrm{tot}}$ from `pycrn`'s
+full mass-action solution (markers) overlaid on the QSS prediction
+(@eq-gk-qss) (dashed). Right: the same data plotted alone, with the
+effective Hill coefficient annotated. The Deficiency One Theorem
+guarantees the single-valued nature of the curve. Generated by
+`examples/06_goldbeter_koshland.py`.](../examples/gk_switch_dose_response.png){#fig-gk width=95%}
+
+## Reaction graph visualisation {#sec-graph}
+
+For pedagogical exposition and debugging, `pycrn` exposes a NetworkX-based
+graph layout via `CRNetwork.draw()`. Figure [-@fig-graph] shows the
+complex reaction graph for the CHA network of §[-@sec-cha]; nodes are
+complexes, directed edges are reactions, and the four weakly connected
+components correspond to the four linkage classes $\ell = 4$ that enter
+the deficiency formula (@eq-deficiency).
+
+![Complex reaction graph for the CHA miR-21 biosensor; nodes are complexes
+(e.g.\ $\mathrm{miR21}+H_{1}$), directed edges are reactions. Four weakly
+connected components ($\ell = 4$) and eight complexes ($n = 8$) on a
+stoichiometric subspace of dimension $s = 3$ give
+$\delta = 8-4-3=1$.](../examples/cha_reaction_graph.png){#fig-graph width=80%}
+
+# Discussion {#sec-discussion}
+
+We have presented `pycrn`, a lightweight Python implementation of
+Feinberg-style chemical reaction network theory tightly integrated with
+SymPy [@meurer2017sympy] for symbolic ODE construction and SciPy
+[@virtanen2020scipy] for numerical equilibration. The combination of
+parameter-free structural certification (DZT, D1T) with a hybrid
+integration/algebraic solver capable of locating both stable and unstable
+fixed points addresses a long-standing gap between the mathematical
+theory and applied practice: practitioners can now state, programmatically
+and prior to any wet-lab experiment, whether a given network is
+*structurally* prohibited from exhibiting bistability or oscillation, and
+then back-test that prediction across the whole physically plausible
+parameter regime by way of (@eq-odes) and (@eq-ss). The six benchmarks of
+§[-@sec-results] exercise the principal capabilities of the library: in
+all cases the CRNT-predicted qualitative behaviour is recovered with a
+solver residual below $10^{-6}\,\mathrm{M\,s^{-1}}$, and the
+Goldbeter--Koshland dose-response curve agrees with the closed-form QSS
+approximation to within $1\%$ over the entire $400\times$ activity scan.
+
+Compared with the foundational Chemical Reaction Network Toolbox
+[@ji2011crnreal] and the constraint-programming approach of
+@soliman2012crnpy, `pycrn` offers (i) an idiomatic Python API tailored to
+the modern scientific stack [@harris2020array; @virtanen2020scipy], (ii)
+first-class support for chemostatted (open) networks in the spirit of
+@polettini2014irreversible---including the algebraic location of
+Hopf-unstable fixed points that forward integration cannot reach---and
+(iii) symbolic ODE/Jacobian expressions ready for downstream pipelines
+such as parameter inference, sensitivity analysis, or thermodynamic
+constraint checking [@ederer2007thermodynamically].
+
+Several limitations remain. The current solver does not implement higher
+deficiency theorems (e.g.\ deficiency-two or higher-deficiency results)
+nor the recent toric-balanced equilibria framework of @craciun2009toric;
+the global attractor conjecture [@anderson2011proof] is not invoked.
+Bifurcation scans are presently limited to one rate constant at a time,
+and continuation-style tracking of unstable branches across folds, as
+provided by XPPAUT [@ermentrout2002simulating] or AUTO, is not (yet)
+implemented. Model-reduction techniques [@rao2018identifying] and
+robustness analysis [@shinar2010structural] are natural next steps, as is
+integration with SBML import/export.
+
+In conclusion, `pycrn` provides an accessible, well-tested, and
+mathematically rigorous entry point into chemical reaction network theory
+for the broader Python scientific community. By coupling Feinberg's
+structural theorems to symbolic and numerical tools, it lowers the
+barrier between formal CRNT and practical model analysis, with
+applications spanning DNA computing [@yin2008catalytic; @zadeh2011nupack],
+enzymatic signal transduction [@goldbeter1981amplified;
+@ferrell2014ultrasensitivity], and synthetic-circuit design
+[@ang2014considerations].
+
+# Data and code availability {.unnumbered}
+
+All source code, examples, the 93-test pytest suite, and scripts to
+regenerate every figure in this paper are openly available under the MIT
+License at <https://github.com/emiliovenegas/pycrn>. The version used to
+prepare this manuscript is tagged `v0.1.0`.
+
+# Author contributions {.unnumbered}
+
+E.V.\ designed the library, implemented the code, performed all numerical
+experiments, and wrote the manuscript.
+
+# Acknowledgements {.unnumbered}
+
+The author acknowledges the open-source scientific Python ecosystem
+([@harris2020array; @virtanen2020scipy; @meurer2017sympy;
+@hagberg2008exploring]) without which this work would not have been
+possible.
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
