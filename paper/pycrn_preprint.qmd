@@ -3,6 +3,7 @@ title: "pycrn: A Python library for structural and numerical analysis of chemica
 shorttitle: "pycrn: Chemical Reaction Network Theory in Python"
 author:
   - name: Emilio A. Venegas
+    orcid: 0000-0002-7689-9185
     affiliations:
       - name: Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud
         address: "Ave. Eugenio Garza Sada 2501 Sur, Col. Tecnológico"
@@ -95,7 +96,6 @@ format:
       text: |
         \usepackage{unicode-math}
         \setmathfont[
-          Path=/home/emiliovenegas/.TinyTeX/texmf-dist/fonts/opentype/public/xits/,
           BoldFont=XITSMath-Bold.otf
         ]{XITSMath-Regular.otf}
         \usepackage{mathtools}
@@ -229,7 +229,7 @@ gap. Built on top of the SciPy scientific stack [@virtanen2020scipy;
 synthetic-biology engineers who want to certify, before any wet-lab work,
 that an enzymatic cycle [@ferrell2014ultrasensitivity], a DNA strand-displacement
 cascade [@yin2008catalytic; @li2011nonenzymatic], or a metabolic motif
-[@ang2014considerations] cannot exhibit pathological bistability or
+[@ang2013considerations] cannot exhibit pathological bistability or
 oscillation; and (b) educators and researchers in chemical reaction
 network theory who want a compact, fully open-source reference
 implementation against which to develop further structural algorithms.
@@ -314,7 +314,7 @@ SymPy, then post-processes the basis (sign normalisation, integer
 scaling, and elementary reduction) to recover physical moiety totals. The
 algorithm exploits the fact that, for mass-balanced networks, a
 non-negative integer basis is always admissible
-[@feinberg2019foundations; @rao2016graph].
+[@feinberg2019foundations; @rao2013graph].
 
 ## Deficiency, linkage classes, and weak reversibility
 
@@ -530,7 +530,7 @@ $B = 1 + A^{2}$ [@prigogine1968symmetry]. For $A = 1$, $B = 3$ the
 condition $B > 1 + A^{2}$ is satisfied and `pycrn` locates the
 *unstable* fixed point $(X^\ast, Y^\ast) = (1, 3)$ algebraically (forward
 integration would orbit the limit cycle indefinitely); the Jacobian
-eigenvalues are $\lambda_{\pm} = 1 \pm i\sqrt{3} - 1 = 1 \pm i\,\sqrt{3}$
+eigenvalues are $\lambda_{\pm} = \tfrac{1}{2} \pm \tfrac{\sqrt{3}}{2}\,i$
 with positive real part, correctly classifying the fixed point as an
 unstable focus. For $B = 1.5 < 1 + A^{2}$ the same fixed point becomes a
 stable spiral.
@@ -726,7 +726,7 @@ the global attractor conjecture [@anderson2011proof] is not invoked.
 Bifurcation scans are presently limited to one rate constant at a time,
 and continuation-style tracking of unstable branches across folds, as
 provided by XPPAUT [@ermentrout2002simulating] or AUTO, is not (yet)
-implemented. Model-reduction techniques [@rao2018identifying] and
+implemented. Model-reduction techniques [@rao2014identifying] and
 robustness analysis [@shinar2010structural] are natural next steps, as is
 integration with SBML import/export.
 
@@ -738,7 +738,7 @@ barrier between formal CRNT and practical model analysis, with
 applications spanning DNA computing [@yin2008catalytic; @zadeh2011nupack],
 enzymatic signal transduction [@goldbeter1981amplified;
 @ferrell2014ultrasensitivity], and synthetic-circuit design
-[@ang2014considerations].
+[@ang2013considerations].
 
 # Data and code availability {.unnumbered}
 
