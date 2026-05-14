@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from crnpy.parsing import parse_reactions
-from crnpy.stoichiometry import build_species_list, build_stoichiometry_matrix, matrix_rank
-from crnpy.crnt import crnt_analysis
+from pycrn.parsing import parse_reactions
+from pycrn.stoichiometry import build_species_list, build_stoichiometry_matrix, matrix_rank
+from pycrn.crnt import crnt_analysis
 
 
 def _analyze(strings):
@@ -34,7 +34,7 @@ def test_simple_reversible_dzt():
 
 
 def test_simple_reversible_conservation():
-    from crnpy.stoichiometry import conservation_laws_sympy
+    from pycrn.stoichiometry import conservation_laws_sympy
     rxns = parse_reactions(["A <-> B"])
     species = build_species_list(rxns)
     N = build_stoichiometry_matrix(rxns, species)
@@ -148,7 +148,7 @@ def test_cha_d1t_applicable():
 
 
 def test_cha_conservation_laws():
-    from crnpy.stoichiometry import conservation_laws_sympy
+    from pycrn.stoichiometry import conservation_laws_sympy
     import sympy
     rxns = parse_reactions(CHA_REACTIONS)
     species = build_species_list(rxns)

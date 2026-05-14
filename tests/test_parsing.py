@@ -1,5 +1,5 @@
 import pytest
-from crnpy.parsing import (
+from pycrn.parsing import (
     parse_complex, parse_reaction_string, parse_reactions,
     canonical_rate_key, normalize_rate_key, Reaction
 )

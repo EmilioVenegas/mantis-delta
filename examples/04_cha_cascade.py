@@ -16,7 +16,7 @@ import matplotlib
 matplotlib.use("Agg")   # headless backend for non-interactive use
 import matplotlib.pyplot as plt
 
-from crnpy import CRNetwork
+from pycrn import CRNetwork
 
 # ── Reaction strings ────────────────────────────────────────────────────────
 CHA_STRINGS = [

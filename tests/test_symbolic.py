@@ -1,8 +1,8 @@
 import sympy
 import pytest
-from crnpy.parsing import parse_reactions
-from crnpy.stoichiometry import build_species_list, build_stoichiometry_matrix
-from crnpy.symbolic import (
+from pycrn.parsing import parse_reactions
+from pycrn.stoichiometry import build_species_list, build_stoichiometry_matrix
+from pycrn.symbolic import (
     make_species_symbols,
     make_rate_symbols,
     build_odes,

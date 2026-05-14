@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from crnpy import CRNetwork
+from pycrn import CRNetwork
 
 
 # ── 1. Simple reversible A ↔ B ────────────────────────────────────────────────

@@ -7,7 +7,7 @@ Demonstrates:
 - Quasi-steady-state approximation validation via numerical SS
 - Eigenvalue analysis showing stable steady state
 """
-from crnpy import CRNetwork
+from pycrn import CRNetwork
 
 rn = CRNetwork.from_string(
     ["E + S <-> ES", "ES -> E + P"],

@@ -1,10 +1,10 @@
-# crnpy — Chemical Reaction Network Theory in Python
+# pycrn — Chemical Reaction Network Theory in Python
 
-[![Tests](https://img.shields.io/badge/tests-60%20passed-brightgreen)](#running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-80%20passed-brightgreen)](#running-the-tests)
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](#installation)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](#license)
 
-**crnpy** is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically using conservation-law-aware integration. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for *all* physically admissible rate constants — without running a single simulation.
+**pycrn** is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically using conservation-law-aware integration. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for *all* physically admissible rate constants — without running a single simulation.
 
 ---
 
@@ -35,11 +35,11 @@
 
 ```bash
 # Inside a virtual environment (recommended)
-pip install crnpy
+pip install pycrn
 
 # From source
-git clone https://github.com/emiliovenegas/crnpy
-cd crnpy
+git clone https://github.com/emiliovenegas/pycrn
+cd pycrn
 pip install -e .
 ```
 
@@ -59,7 +59,7 @@ A **chemical reaction network** is a set of reactions of the form
 ν₁A + ν₂B  →  μ₁C + μ₂D
 ```
 
-where species names (`A`, `B`, …) and their stoichiometric coefficients (`ν`, `μ`) define how molecules combine and transform. Each side of a reaction arrow is called a **complex**. In crnpy, complexes are the fundamental node type of the reaction graph.
+where species names (`A`, `B`, …) and their stoichiometric coefficients (`ν`, `μ`) define how molecules combine and transform. Each side of a reaction arrow is called a **complex**. In pycrn, complexes are the fundamental node type of the reaction graph.
 
 ### Stoichiometry matrix *N*
 
@@ -96,7 +96,7 @@ A network is **weakly reversible** if every reaction pathway can be reversed (no
 ## Quick start
 
 ```python
-from crnpy import CRNetwork
+from pycrn import CRNetwork
 
 # Build the network
 rn = CRNetwork.from_string(
@@ -386,7 +386,7 @@ result.steady_states     # list[list[SteadyState]] — one list per parameter va
 Plot a bifurcation diagram for one species:
 
 ```python
-from crnpy.plot import plot_bifurcation
+from pycrn.plot import plot_bifurcation
 import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots()
@@ -415,7 +415,7 @@ Nodes are reaction complexes (e.g. `miR21 + H1`); directed edges are reactions. 
 #### Bifurcation diagram
 
 ```python
-from crnpy.plot import plot_bifurcation
+from pycrn.plot import plot_bifurcation
 
 fig, ax = plt.subplots()
 plot_bifurcation(result, species="H1H2_CP", ax=ax)
@@ -633,17 +633,25 @@ The primary validation case. Demonstrates the full workflow:
 
 *Figure 1. Steady-state signal [H1H2\_CP]* as a function of initial [miR-21] (0.1–100 nM). The single-valued, monotone curve is consistent with the D1T uniqueness guarantee.*
 
+### `05_brusselator_chemostatted.py` — Brusselator with chemostatted species
+
+Shows that when A and B are held fixed (continuously replenished), the reduced 2D (X, Y) subsystem undergoes a Hopf bifurcation and sustains limit-cycle oscillations for B > 1 + A². Demonstrates the chemostatted ODE wrapper pattern: pin selected species by zeroing their derivatives. Includes both the oscillatory case (B=3) and the stable-spiral contrast case (B=1.5).
+
+### `06_goldbeter_koshland.py` — Goldbeter-Koshland switch (literature validation)
+
+Validates pycrn against the published GK result (PNAS 1981). The full mass-action mechanism (kinase + phosphatase arms) has δ=1, satisfies D1T → at most one SS per stoichiometry class → bistability is structurally impossible. Numerically confirms: (1) exactly one SS found across a 400× scan of kinase/phosphatase ratio, (2) fractional activation matches the GK QSS formula to within 1%, (3) effective Hill coefficient ≈ 2250 at Wt/Km = 9000.
+
 ---
 
 ## Running the tests
 
 ```bash
-cd crnpy
+cd pycrn
 pip install -e .
 pytest tests/ -v
 ```
 
-The test suite has 60 tests across five files:
+The test suite has 80 tests across six files:
 
 | File | Tests | What is covered |
 |---|---|---|
@@ -652,6 +660,7 @@ The test suite has 60 tests across five files:
 | `test_symbolic.py` | 6 | ODE form, Jacobian entries, numeric substitution, CHA mass balance |
 | `test_analysis.py` | 8 | A↔B analytic SS, MM enzyme conservation, CHA non-negativity / conservation / signal / stability |
 | `test_cha.py` | 18 | End-to-end integration: all structural properties, conservation laws, CRNT summary strings, SS attributes |
+| `test_gk_switch.py` | 20 | Goldbeter-Koshland switch: CRNT analysis (δ=1, D1T), conservation laws, symmetric SS, monostability scan |
 
 ---
 
@@ -675,16 +684,16 @@ The `rates` dictionary keys are normalized by sorting species alphabetically on 
 
 The rate for one or more reactions is zero (see above). Call `rn._rates` to inspect what was stored.
 
-### Import error: `ModuleNotFoundError: No module named 'crnpy'`
+### Import error: `ModuleNotFoundError: No module named 'pycrn'`
 
-If you cloned from source, make sure you installed in editable mode **from inside the `crnpy/` subdirectory**:
+If you cloned from source, make sure you installed in editable mode **from inside the `pycrn/` subdirectory**:
 
 ```bash
-cd /path/to/hairpin/crnpy   # must be the subdirectory containing pyproject.toml
+cd /path/to/hairpin/pycrn   # must be the subdirectory containing pyproject.toml
 pip install -e .
 ```
 
-Running `pip install -e .` from the parent directory (`hairpin/`) will not work because the outer `crnpy/` directory is found as a namespace package and shadows the installed package.
+Running `pip install -e .` from the parent directory (`hairpin/`) will not work because the outer `pycrn/` directory is found as a namespace package and shadows the installed package.
 
 ### Steady state has `residual > 1e-4`
 
@@ -697,7 +706,7 @@ The solver did not converge tightly. This can happen in very stiff systems or wh
 
 ## Background and theory
 
-crnpy implements the mathematical framework of Feinberg's Chemical Reaction Network Theory. The key references are:
+pycrn implements the mathematical framework of Feinberg's Chemical Reaction Network Theory. The key references are:
 
 - **Horn F, Jackson R** (1972). General mass action kinetics. *Arch. Rational Mech. Anal.* 47, 81–116.
 - **Feinberg M** (1979). *Lectures on Chemical Reaction Networks.* University of Wisconsin, Madison. Available at [crnt.osu.edu](https://crnt.osu.edu).
@@ -723,14 +732,14 @@ Rate constants were derived from NUPACK thermodynamic simulations at 37 °C in p
 
 ## Citation
 
-If you use crnpy in published work, please cite:
+If you use pycrn in published work, please cite:
 
 ```bibtex
-@software{venegas2026crnpy,
+@software{venegas2026pycrn,
   author  = {Venegas, Emilio},
-  title   = {crnpy: Chemical Reaction Network Theory analysis in Python},
+  title   = {pycrn: Chemical Reaction Network Theory analysis in Python},
   year    = {2026},
-  url     = {https://github.com/emiliovenegas/crnpy},
+  url     = {https://github.com/emiliovenegas/pycrn},
   version = {0.1.0}
 }
 ```

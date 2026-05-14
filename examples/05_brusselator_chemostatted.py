@@ -7,7 +7,7 @@ replenished — i.e. they are chemostatted at fixed concentrations. In that sett
 the 2D (X, Y) subsystem can undergo a Hopf bifurcation and sustain limit-cycle
 oscillations.
 
-This example demonstrates how to use crnpy's ODE machinery with chemostatted
+This example demonstrates how to use pycrn's ODE machinery with chemostatted
 species by wrapping the library's ODE function: species A and B are pinned to their
 initial values at every time step, effectively treating them as kinetic parameters.
 
@@ -23,8 +23,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-from crnpy import CRNetwork
-from crnpy.analysis import build_ode_function
+from pycrn import CRNetwork
+from pycrn.analysis import build_ode_function
 
 # ── 1. Full network CRNT analysis ───────────────────────────────────────────
 rn = CRNetwork.from_string(

@@ -1,6 +1,6 @@
 """Integration tests for the CHA miR-21 system via CRNetwork public API."""
 import pytest
-from crnpy import CRNetwork
+from pycrn import CRNetwork
 
 CHA_STRINGS = [
     "miR21 + H1 <-> miR21_H1",
@@ -55,7 +55,7 @@ def test_n_linkage_classes(rn):
 
 
 def test_stoichiometry_rank(rn):
-    from crnpy.stoichiometry import matrix_rank
+    from pycrn.stoichiometry import matrix_rank
     assert matrix_rank(rn.stoichiometry_matrix) == 3
 
 

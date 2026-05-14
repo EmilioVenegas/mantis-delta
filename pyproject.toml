@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "crnpy"
+name = "pycrn"
 version = "0.1.0"
 description = "Structural and numerical analysis of chemical reaction networks under mass-action kinetics"
 readme = "README.md"
@@ -33,9 +33,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/emiliovenegas/crnpy"
-Repository = "https://github.com/emiliovenegas/crnpy"
-Issues = "https://github.com/emiliovenegas/crnpy/issues"
+Homepage = "https://github.com/emiliovenegas/pycrn"
+Repository = "https://github.com/emiliovenegas/pycrn"
+Issues = "https://github.com/emiliovenegas/pycrn/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
