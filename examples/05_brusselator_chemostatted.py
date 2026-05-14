@@ -20,6 +20,7 @@ Demonstrates:
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
+matplotlib.rcParams.update({"font.family": "STIXGeneral", "mathtext.fontset": "stix"})
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 

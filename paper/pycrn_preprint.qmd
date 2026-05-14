@@ -3,15 +3,12 @@ title: "pycrn: A Python library for structural and numerical analysis of chemica
 shorttitle: "pycrn: Chemical Reaction Network Theory in Python"
 author:
   - name: Emilio A. Venegas
-    email: emiliovenegas10@gmail.com
-    corresponding: true
     affiliations:
       - name: Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud
         address: "Ave. Eugenio Garza Sada 2501 Sur, Col. Tecnológico"
         city: "Monterrey, N.L."
         postal-code: "64700"
         country: "México"
-date: today
 abstract: |
   Chemical Reaction Network Theory (CRNT), developed by Horn, Jackson, and
   Feinberg, provides parameter-free structural theorems that constrain the
@@ -105,6 +102,8 @@ format:
         \usepackage{booktabs}
         \usepackage{microtype}
         \usepackage{siunitx}
+        \usepackage{fancyvrb}
+        \fvset{fontsize=\small}
         \usepackage{graphicx}
         \usepackage[font=small,labelfont=bf]{caption}
         \usepackage{abstract}
@@ -126,10 +125,6 @@ format:
             \vspace{0.6em}%
             {\small\itshape\textsuperscript{1}Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud,\\
               Ave.\ Eugenio Garza Sada 2501 Sur, Col.\ Tecnológico, Monterrey, N.L.\ 64700, México\par}%
-            \vspace{0.5em}%
-            {\small\textsuperscript{*}Correspondence: \texttt{emiliovenegas10@gmail.com}\par}%
-            \vspace{0.9em}%
-            {\@date\par}%
           \end{center}%
           \vspace{0.8em}%
         }
@@ -448,17 +443,7 @@ $\|\mathbf{N}\mathbf{v}(\mathbf{c}^\ast)\|_2 < 10^{-12}\,\mathrm{M\,s^{-1}}$
 and eigenvalues $\{0, -1.5\}$. The single zero eigenvalue is the expected
 signature of the conservation law dimension.
 
-```python
-from pycrn import CRNetwork
-rn = CRNetwork.from_string(
-    ["A <-> B"],
-    rates={"A -> B": 1.0, "B -> A": 0.5},
-)
-print(rn.crnt_summary())          # δ = 0, DZT applies
-ss = rn.steady_states({"A": 2.0, "B": 0.0})[0]
-# ss.concentrations  ≈ {'A': 0.6667, 'B': 1.3333}
-# ss.is_stable       == True
-```
+The network is constructed from a human-readable string via `CRNetwork.from_string`; `crnt_summary` reports $\delta = 0$ and confirms weak reversibility, enabling the DZT; and `steady_states` locates the fixed point and returns both the equilibrium concentrations and the eigenvalues of the Jacobian.
 
 ## Michaelis--Menten: $\delta = 0$ but not weakly reversible {#sec-mm}
 
