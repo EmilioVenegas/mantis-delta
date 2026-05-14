@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crnpy"
+version = "0.1.0"
+description = "Structural and numerical analysis of chemical reaction networks under mass-action kinetics"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Emilio Venegas", email = "emiliovenegas10@gmail.com" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "sympy>=1.12",
+    "matplotlib>=3.6",
+    "networkx>=3.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/emiliovenegas/crnpy"
+Repository = "https://github.com/emiliovenegas/crnpy"
+Issues = "https://github.com/emiliovenegas/crnpy/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
