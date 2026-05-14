@@ -1,10 +1,16 @@
 # pycrn — Chemical Reaction Network Theory in Python
 
-[![Tests](https://img.shields.io/badge/tests-80%20passed-brightgreen)](#running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-93%20passed-brightgreen)](#running-the-tests)
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](#installation)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](#license)
 
-**pycrn** is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically using conservation-law-aware integration. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for *all* physically admissible rate constants — without running a single simulation.
+**pycrn** is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for *all* physically admissible rate constants — without running a single simulation.
+
+The library supports three classes of chemical networks:
+
+- **Closed networks** — all species are dynamic; conservation laws are automatically computed and preserved by the solver (e.g. Michaelis-Menten, CHA cascade, Goldbeter-Koshland switch).
+- **Open / chemostatted networks** — selected species are held at fixed concentrations by an external reservoir (e.g. Brusselator with A and B chemostatted). Chemostatted species are excluded from the ODE system and stoichiometry rank calculation but appear in flux expressions. The solver uses a pure algebraic strategy that can locate both stable *and* **unstable fixed points** — including Hopf-bifurcation centres that forward integration can never reach.
+- **Semi-open networks** — some species chemostatted, others conserved among themselves.
 
 ---
 
@@ -15,6 +21,7 @@
 3. [Quick start](#quick-start)
 4. [User guide](#user-guide)
    - [Defining a network](#1-defining-a-network)
+   - [Chemostatted (fixed-concentration) species](#chemostatted-fixed-concentration-species)
    - [CRNT structural analysis](#2-crnt-structural-analysis)
    - [Conservation laws](#3-conservation-laws)
    - [Symbolic ODEs and Jacobian](#4-symbolic-odes-and-jacobian)
@@ -164,6 +171,39 @@ print(rn.rate_keys())
 
 Use those exact strings as keys in your `rates` dictionary.
 
+#### Chemostatted (fixed-concentration) species
+
+Pass `chemostatted` to hold selected species at fixed concentrations — as if they were continuously replenished by an external reservoir (a chemostat, a large buffer, a flowing reactor).
+
+```python
+# Brusselator: A and B are fed continuously; X and Y are the dynamic species
+rn = CRNetwork.from_string(
+    ["A -> X", "2X + Y -> 3X", "B + X -> Y + D", "X -> E"],
+    rates={
+        "A -> X": 1.0, "2X + Y -> 3X": 1.0,
+        "B + X -> Y + D": 1.0, "X -> E": 1.0,
+    },
+    chemostatted={"A": 1.0, "B": 3.0, "D": 0.0, "E": 0.0},
+)
+
+rn.species          # ['X', 'Y']  — only dynamic species
+rn.chemostatted     # {'A': 1.0, 'B': 3.0, 'D': 0.0, 'E': 0.0}
+rn.odes()           # {'X': 1.0 - 4.0*X + X**2*Y, 'Y': 3.0*X - X**2*Y}
+```
+
+The effect on each part of the library:
+
+| Component | Effect |
+|---|---|
+| `species` | Chemostatted species excluded |
+| `stoichiometry_matrix` | Rows for chemostatted species removed |
+| `deficiency` / `conservation_laws` | Computed on reduced dynamic subsystem |
+| `odes()` | Only dynamic species get equations; chemostatted concentrations folded into rate prefactors |
+| `steady_states()` | Algebraic solver (no ODE integration) — finds unstable fixed points too |
+| `crnt_summary()` | Lists chemostatted species and their concentrations at the top |
+
+> **Note:** chemostatted concentrations that are zero (e.g. `D=0.0`, `E=0.0`) effectively act as sinks — their reactions have zero flux — which is the standard Brusselator formulation.
+
 #### Structural properties (no rates needed)
 
 The following properties are available on any `CRNetwork` regardless of whether rates were supplied. They are computed lazily and cached on first access.
@@ -297,10 +337,16 @@ ic = {"A": 2.0, "B": 0.0}
 ss_list = rn.steady_states(ic, n_attempts=50, seed=0)
 ```
 
-**How the solver works:**
+**How the solver works** — the strategy depends on whether the network has conservation laws:
 
-1. **Primary strategy** — integrate the ODE from the given initial conditions to t = 10⁶ s using SciPy's stiff Radau integrator. This exactly preserves conservation law totals and reliably finds the attractor.
-2. **Secondary strategy** — generate `n_attempts − 1` random starting points that satisfy the conservation constraints (same totals as `ic`), and run a bounded least-squares solver from each. This finds additional steady states in multistable systems.
+**Closed / semi-open systems (have conservation laws):**
+1. **ODE integration** from the supplied IC using SciPy's stiff Radau integrator — respects conservation manifold, reliably reaches the stable attractor.
+2. **Algebraic `least_squares`** from the same IC — can find *unstable* fixed points that integration diverges away from.
+3. **Multi-start** on random ICs constrained to the same conservation totals → ODE integration then algebraic fallback.
+
+**Open / chemostatted systems (no conservation laws):**
+1. **Algebraic `least_squares`** directly from the supplied IC — the only strategy that can locate unstable fixed points (e.g. Hopf bifurcation centres inside a limit cycle).
+2. **Scale-aware multi-start** — random ICs sampled around the magnitude of `initial_conditions`, all solved algebraically. ODE integration is skipped entirely because forward integration of an oscillator orbits the limit cycle indefinitely.
 
 Solutions are filtered for physical validity (no negative concentrations) and uniqueness (duplicates within 1% relative distance are discarded).
 
@@ -312,11 +358,12 @@ ss = ss_list[0]
 ss.concentrations   # dict[str, float] — species → concentration (M)
 ss.eigenvalues      # np.ndarray (complex) — eigenvalues of the Jacobian at this SS
 ss.is_stable        # bool — True if all significant eigenvalues have Re < 0
-ss.is_oscillatory   # bool — True if any significant eigenvalue has Im ≠ 0 and Re < 0
+ss.is_oscillatory   # bool — True if any significant eigenvalue has non-trivial Im part
+                    #         (covers stable spirals Re<0 AND unstable foci Re>0)
 ss.residual         # float — ‖f(x*)‖₂ at the solution; < 1e-6 is good, < 1e-10 is excellent
 ```
 
-**Note on zero eigenvalues:** for a network with *c* conservation laws, the Jacobian always has at least *c* eigenvalues near zero (corresponding to the null directions of the dynamics). These are filtered out automatically before computing `is_stable` and `is_oscillatory`.
+**Note on zero eigenvalues:** eigenvalues with `|λ| < 1e-4 · max|λ|` are treated as zero (from conservation law dimensions) and excluded from stability classification.
 
 #### Controlling the search
 
@@ -338,14 +385,18 @@ Stability is determined by the eigenvalues of the Jacobian evaluated at each ste
 
 | Condition | Classification |
 |---|---|
-| All significant Re(λ) < 0 | Stable node (or stable spiral if Im ≠ 0) |
-| Any significant Re(λ) > 0 | Unstable |
+| All significant Re(λ) < 0, Im = 0 | Stable node |
+| All significant Re(λ) < 0, any Im ≠ 0 | Stable spiral — `is_oscillatory = True` |
+| Any significant Re(λ) > 0, any Im ≠ 0 | Unstable focus (Hopf) — `is_oscillatory = True` |
+| Any significant Re(λ) > 0, Im = 0 | Unstable node |
 | Any significant Re(λ) = 0 | Non-hyperbolic (borderline) |
+
+`is_oscillatory` covers **both** stable spirals (Re < 0) and unstable foci (Re > 0) — any fixed point with complex eigenvalues. This is the relevant flag for identifying Hopf bifurcation candidates.
 
 ```python
 ss = rn.steady_states(ic)[0]
 print(ss.is_stable)       # True / False
-print(ss.is_oscillatory)  # True if any λ has Im ≠ 0 and Re < 0 (damped spiral)
+print(ss.is_oscillatory)  # True if any λ has significant imaginary part (regardless of Re sign)
 print(ss.eigenvalues)     # full array including conservation-law zeros
 ```
 
@@ -431,10 +482,10 @@ plt.savefig("bifurcation.png", dpi=150)
 ### `CRNetwork`
 
 ```python
-CRNetwork.from_string(reaction_strings, rates=None) → CRNetwork
+CRNetwork.from_string(reaction_strings, rates=None, chemostatted=None) → CRNetwork
 ```
 
-The main entry point. `reaction_strings` is a list of strings (see [syntax table](#reaction-syntax)). `rates` is an optional `dict[str, float]`.
+The main entry point. `reaction_strings` is a list of strings (see [syntax table](#reaction-syntax)). `rates` is an optional `dict[str, float]`. `chemostatted` is an optional `dict[str, float]` mapping species names to their fixed concentrations — those species are excluded from the ODE system and treated as external parameters.
 
 ---
 
@@ -444,14 +495,15 @@ All properties below are cached after first access. They do not require rate con
 
 | Property | Type | Description |
 |---|---|---|
-| `species` | `list[str]` | All species, sorted alphabetically |
+| `species` | `list[str]` | Dynamic species only (chemostatted excluded), sorted alphabetically |
+| `chemostatted` | `dict[str, float]` | Fixed-concentration species and their values (copy — mutating it has no effect) |
 | `complexes` | `list[Complex]` | All complexes (frozensets of `(name, coeff)` pairs) |
-| `stoichiometry_matrix` | `np.ndarray` | N matrix, shape (n\_species × n\_reactions) |
-| `n_species` | `int` | Number of distinct species |
+| `stoichiometry_matrix` | `np.ndarray` | N matrix, shape (n\_dynamic\_species × n\_reactions) |
+| `n_species` | `int` | Number of dynamic species |
 | `n_complexes` | `int` | Number of distinct complexes (*n* in deficiency formula) |
 | `n_reactions` | `int` | Total number of directed reactions |
 | `n_linkage_classes` | `int` | Number of weakly connected components (*l*) |
-| `deficiency` | `int` | δ = n − l − rank(N) |
+| `deficiency` | `int` | δ = n − l − rank(N), computed on dynamic subsystem |
 | `is_weakly_reversible` | `bool` | Every WCC is strongly connected |
 | `conservation_laws` | `list[sympy.Expr]` | Left null space of N; non-negative integer coefficients |
 
@@ -546,14 +598,17 @@ Draws the complex reaction graph using NetworkX and Matplotlib.
 ```python
 @dataclass
 class SteadyState:
-    concentrations: dict[str, float]  # species → concentration (M)
+    concentrations: dict[str, float]  # dynamic species → concentration (M)
     eigenvalues:    np.ndarray         # complex eigenvalues of Jacobian at this SS
     is_stable:      bool               # all significant Re(λ) < 0
-    is_oscillatory: bool               # any significant λ has Im ≠ 0 and Re < 0
+    is_oscillatory: bool               # any significant λ has |Im| > 1e-10·|λ|
+                                       # (stable spirals AND unstable foci)
     residual:       float              # ‖f(x*)‖₂ — how well the SS condition is satisfied
 ```
 
 **Eigenvalue filtering:** eigenvalues with `|λ| < 1e-4 · max|λ|` are treated as zero (arising from conservation law dimensions) and excluded from the stability classification.
+
+**`is_oscillatory` semantics:** `True` for any fixed point with complex eigenvalues — this includes both stable spirals (Re < 0, damped oscillations) and unstable foci (Re > 0, the Hopf case). In both cases the system rotates in phase space near the fixed point.
 
 ---
 
@@ -651,7 +706,7 @@ pip install -e .
 pytest tests/ -v
 ```
 
-The test suite has 80 tests across six files:
+The test suite has 93 tests across seven files:
 
 | File | Tests | What is covered |
 |---|---|---|
@@ -661,6 +716,7 @@ The test suite has 80 tests across six files:
 | `test_analysis.py` | 8 | A↔B analytic SS, MM enzyme conservation, CHA non-negativity / conservation / signal / stability |
 | `test_cha.py` | 18 | End-to-end integration: all structural properties, conservation laws, CRNT summary strings, SS attributes |
 | `test_gk_switch.py` | 20 | Goldbeter-Koshland switch: CRNT analysis (δ=1, D1T), conservation laws, symmetric SS, monostability scan |
+| `test_chemostatted.py` | 13 | Chemostatted species: excluded from ODEs/stoichiometry, Brusselator unstable FP, stable spiral, fixed-point location, CRNT summary, backward compatibility |
 
 ---
 

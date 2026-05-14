@@ -203,13 +203,21 @@ def _full_jacobian_fn(
 def _integrate_to_ss(
     f_ode: Any,
     y0: np.ndarray,
-    t_end: float = 1e6,
-    rtol: float = 1e-10,
-    atol: float = 1e-16,
+    t_end: float = 1e4,
+    rtol: float = 1e-8,
+    atol: float = 1e-12,
 ) -> tuple[np.ndarray | None, float]:
     """
     Integrate ODE from y0 to t_end and return the final state.
     Returns (y_final, residual_norm) or (None, inf) on failure.
+
+    Note: t_end is intentionally short (1e4 default) so that limit-cycle systems
+    (unstable fixed points / oscillators) do not cause the solver to hang.
+    The residual check downstream will reject non-converged trajectories, and the
+    algebraic least_squares fallback handles those cases.
+
+    Only call this for systems with conservation laws (closed/semi-closed networks).
+    For fully open systems with no CLs, skip integration and use least_squares directly.
     """
     from scipy.integrate import solve_ivp
     try:
@@ -242,9 +250,10 @@ def find_steady_states(
     chemostatted_values: dict[str, float] | None = None,
 ) -> list[SteadyState]:
     """
-    Steady-state finder using two strategies:
-    1. Primary: integrate ODE to t=1e6 s (conserves all conservation laws exactly).
-    2. Secondary: multi-start least_squares for additional steady states.
+    Steady-state finder using three strategies:
+    1. Direct least_squares from user IC (finds both stable and unstable fixed points).
+    2. Short ODE integration from user IC (conserves CLs; reaches stable attractors).
+    3. Multi-start with scale-aware random ICs → ODE then least_squares fallback.
 
     Chemostatted species are folded into effective rate constants so the ODE
     system only tracks dynamic species.
@@ -289,22 +298,8 @@ def find_steady_states(
         )
         collected.append(ss)
 
-    # Strategy 1: integrate from initial conditions (guaranteed to respect CLs)
-    y_final, res = _integrate_to_ss(f_ode, y_ref.copy())
-    if y_final is not None:
-        _try_add(y_final, res)
-
-    # Strategy 2: multi-start least_squares for finding additional steady states
-    for _ in range(n_attempts - 1):
-        y0 = _make_feasible_initial(cl_vecs, cl_totals, n_sp, rng)
-        if y0 is None:
-            continue
-        # Try ODE integration first (respects CLs)
-        y_ivp, res_ivp = _integrate_to_ss(f_ode, y0, t_end=1e5)
-        if y_ivp is not None and res_ivp < 1e-4:
-            _try_add(y_ivp, res_ivp)
-            continue
-        # Fallback: direct least_squares
+    def _try_least_squares(y0: np.ndarray) -> None:
+        """Try algebraic least_squares from y0; can find unstable fixed points."""
         try:
             result = least_squares(
                 system_fn,
@@ -320,6 +315,48 @@ def find_steady_states(
         except Exception:
             pass
 
+    has_cl = len(cl_vecs) > 0
+
+    if has_cl:
+        # ── Closed / semi-closed system (has conservation laws) ──────────────
+        # Strategy 1a: ODE integration from user IC — respects CLs, reaches the
+        # physically relevant attractor (unique within each conservation class).
+        y_final, res = _integrate_to_ss(f_ode, y_ref.copy())
+        if y_final is not None:
+            _try_add(y_final, res)
+
+        # Strategy 1b: algebraic solve from user IC — finds any fixed point
+        # including those that are unstable (integration diverges from them).
+        _try_least_squares(y_ref.copy())
+
+        # Strategy 2: multi-start on the constraint manifold
+        scale = max(float(np.max(np.abs(y_ref))), 1.0)
+        for _ in range(n_attempts - 2):
+            y0 = _make_feasible_initial(cl_vecs, cl_totals, n_sp, rng)
+            if y0 is None:
+                continue
+            y_ivp, res_ivp = _integrate_to_ss(f_ode, y0, t_end=1e4)
+            if y_ivp is not None and res_ivp < 1e-4:
+                _try_add(y_ivp, res_ivp)
+                continue
+            _try_least_squares(y0)
+
+    else:
+        # ── Open / chemostatted system (no conservation laws) ─────────────────
+        # ODE integration is useless here: limit-cycle attractors make it hang,
+        # and there is no conservation manifold to project onto.  Use algebraic
+        # least_squares exclusively.
+
+        # Strategy 1: algebraic solve from user IC (finds both stable & unstable FPs)
+        _try_least_squares(y_ref.copy())
+
+        # Strategy 2: scale-aware multi-start algebraic solve
+        scale = max(float(np.max(np.abs(y_ref))), 1.0)
+        for _ in range(n_attempts - 1):
+            y0 = np.abs(rng.normal(loc=scale, scale=scale * 0.5, size=n_sp))
+            y0 = np.maximum(y0, 1e-12)
+            _try_least_squares(y0)
+
     return collected
 
 
@@ -329,6 +366,13 @@ def classify_steady_state(
 ) -> tuple[bool, bool]:
     """
     Returns (is_stable, is_oscillatory).
+
+    ``is_stable``     — True iff all significant eigenvalues have Re < 0.
+    ``is_oscillatory`` — True iff any significant eigenvalue has a non-trivial
+                         imaginary part (|Im| > 1e-10 * |λ|).  This covers both
+                         stable spirals (Re<0) *and* unstable foci/spirals (Re>0),
+                         i.e. any fixed point near a Hopf bifurcation.
+
     Filters near-zero eigenvalues (from conservation law dimensions) before classifying.
     """
     if len(eigenvalues) == 0:
@@ -341,8 +385,10 @@ def classify_steady_state(
     if len(significant) == 0:
         return True, False
     is_stable = bool(np.all(np.real(significant) < 0))
+    # Oscillatory = complex eigenvalues regardless of stability
+    # (captures both stable spirals and unstable foci / Hopf-born limit cycles)
     is_oscillatory = bool(
-        np.any((np.abs(np.imag(significant)) > 1e-10) & (np.real(significant) < 0))
+        np.any(np.abs(np.imag(significant)) > 1e-10 * np.abs(significant))
     )
     return is_stable, is_oscillatory
 
