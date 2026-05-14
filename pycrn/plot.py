@@ -170,7 +170,7 @@ def draw_reaction_graph(
             x, y, txt,
             ha="center", va="center",
             fontsize=font_size,
-            family="DejaVu Sans",
+            family="STIXGeneral",
             color="#1a1a2e",
             zorder=3,
             bbox=dict(
@@ -220,7 +220,7 @@ def draw_reaction_graph(
             "\n".join(stats_lines),
             transform=ax.transAxes,
             ha="left", va="top",
-            fontsize=9, family="DejaVu Sans",
+            fontsize=9, family="STIXGeneral",
             bbox=dict(boxstyle="round,pad=0.4", fc="#FAFAFA",
                       ec="#BDC3C7", lw=0.8),
             zorder=4,
@@ -244,6 +244,7 @@ def draw_reaction_graph(
             framealpha=0.95,
             fontsize=8,
             handlelength=1.4,
+            prop={"family": "STIXGeneral"},
         )
 
     ax.set_axis_off()

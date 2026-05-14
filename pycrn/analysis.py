@@ -1,4 +1,4 @@
-"""Numerical steady-state finding, stability analysis, and bifurcation scanning."""
+"""Numerical ODE simulation, steady-state finding, stability analysis, and bifurcation scanning."""
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -28,6 +28,23 @@ class BifurcationResult:
     parameter_name: str
     parameter_values: np.ndarray
     steady_states: list[list[SteadyState]]
+
+
+@dataclass
+class SimulationResult:
+    times: np.ndarray
+    concentrations: dict[str, np.ndarray]
+    success: bool
+
+    def at(self, t: float) -> dict[str, float]:
+        """Return interpolated concentrations at time t."""
+        idx = int(np.searchsorted(self.times, t, side="right")) - 1
+        idx = max(0, min(idx, len(self.times) - 1))
+        return {sp: float(arr[idx]) for sp, arr in self.concentrations.items()}
+
+    def final(self) -> dict[str, float]:
+        """Return concentrations at the last time point."""
+        return {sp: float(arr[-1]) for sp, arr in self.concentrations.items()}
 
 
 def build_ode_function(
@@ -200,6 +217,77 @@ def _full_jacobian_fn(
     return full_jac
 
 
+def simulate_ode(
+    reactions: list[Reaction],
+    species: list[str],
+    rate_values: dict[str, float],
+    initial_conditions: dict[str, float],
+    t_span: tuple[float, float],
+    t_eval: np.ndarray | None = None,
+    chemostatted_values: dict[str, float] | None = None,
+    rtol: float = 1e-8,
+    atol: float = 1e-12,
+) -> SimulationResult:
+    """
+    Integrate the ODE system forward in time and return the full trajectory.
+
+    Parameters
+    ----------
+    t_span : (t0, tf)
+        Start and end times in seconds.
+    t_eval : array-like, optional
+        Times at which to store the solution.  Defaults to 200 log-spaced
+        points across t_span (or linear if t_span[0] == 0 and t_span[1] <= 0).
+    chemostatted_values : dict, optional
+        Fixed concentrations folded into rate constants (same semantics as
+        ``find_steady_states``).
+
+    Returns
+    -------
+    SimulationResult
+        ``.times`` (1-D array), ``.concentrations`` (dict species → 1-D array),
+        ``.success`` (bool).  Use ``.final()`` to get the last time-point dict
+        or ``.at(t)`` for a specific time.
+    """
+    from scipy.integrate import solve_ivp
+    from .stoichiometry import fold_chemostatted_into_rates
+
+    chem_vals = chemostatted_values or {}
+    eff_rates = fold_chemostatted_into_rates(reactions, rate_values, chem_vals) if chem_vals else rate_values
+    chem_keys = set(chem_vals.keys())
+
+    f_ode = build_ode_function(reactions, species, eff_rates, chem_keys)
+    y0 = np.array([initial_conditions.get(s, 0.0) for s in species])
+
+    t0, tf = float(t_span[0]), float(t_span[1])
+    if t_eval is None:
+        n_pts = 200
+        if t0 <= 0 and tf > 0:
+            t_eval = np.logspace(np.log10(max(tf * 1e-6, 1e-6)), np.log10(tf), n_pts - 1)
+            t_eval = np.concatenate([[t0], t_eval])
+        else:
+            t_eval = np.linspace(t0, tf, n_pts)
+
+    try:
+        sol = solve_ivp(
+            f_ode,
+            [t0, tf],
+            y0,
+            method="Radau",
+            t_eval=t_eval,
+            rtol=rtol,
+            atol=atol,
+            dense_output=False,
+        )
+        times = sol.t
+        conc = {sp: np.maximum(sol.y[i], 0.0) for i, sp in enumerate(species)}
+        return SimulationResult(times=times, concentrations=conc, success=sol.success)
+    except Exception:
+        times = np.array([t0, tf])
+        conc = {sp: np.full(2, y0[i]) for i, sp in enumerate(species)}
+        return SimulationResult(times=times, concentrations=conc, success=False)
+
+
 def _integrate_to_ss(
     f_ode: Any,
     y0: np.ndarray,
@@ -248,15 +336,27 @@ def find_steady_states(
     tol: float = 1e-8,
     seed: int | None = None,
     chemostatted_values: dict[str, float] | None = None,
+    t_end: float = 1e4,
 ) -> list[SteadyState]:
     """
     Steady-state finder using three strategies:
     1. Direct least_squares from user IC (finds both stable and unstable fixed points).
-    2. Short ODE integration from user IC (conserves CLs; reaches stable attractors).
+    2. ODE integration from user IC to t_end (conserves CLs; reaches stable attractors).
     3. Multi-start with scale-aware random ICs → ODE then least_squares fallback.
 
     Chemostatted species are folded into effective rate constants so the ODE
     system only tracks dynamic species.
+
+    Parameters
+    ----------
+    t_end : float
+        Integration horizon for ODE-based strategies (seconds).  The default
+        (1e4 s) is intentionally short so that oscillatory / limit-cycle
+        systems do not hang; the algebraic least_squares fallback handles those
+        cases.  For systems with very slow reactions (e.g. leakage pathways
+        with τ >> 1e4 s) increase this value so that ODE integration reaches
+        the true attractor.  A safe upper bound is 10–100× the slowest
+        relevant timescale (τ = 1 / (k_slow × [reactant])).
 
     Returns a list of SteadyState objects, sorted by true ODE residual (lowest first),
     filtered to remove duplicate states and high-residual algebraic artifacts.
@@ -326,7 +426,7 @@ def find_steady_states(
         # ── Closed / semi-closed system (has conservation laws) ──────────────
         # Strategy 1a: ODE integration from user IC — respects CLs, reaches the
         # physically relevant attractor (unique within each conservation class).
-        y_final, res = _integrate_to_ss(f_ode, y_ref.copy())
+        y_final, res = _integrate_to_ss(f_ode, y_ref.copy(), t_end=t_end)
         if y_final is not None:
             _try_add(y_final, res)
 
@@ -340,7 +440,7 @@ def find_steady_states(
             y0 = _make_feasible_initial(cl_vecs, cl_totals, n_sp, rng)
             if y0 is None:
                 continue
-            y_ivp, res_ivp = _integrate_to_ss(f_ode, y0, t_end=1e4)
+            y_ivp, res_ivp = _integrate_to_ss(f_ode, y0, t_end=t_end)
             if y_ivp is not None and res_ivp < 1e-4:
                 _try_add(y_ivp, res_ivp)
                 continue
@@ -420,8 +520,18 @@ def scan_bifurcation(
     initial_conditions: dict[str, float],
     n_attempts: int = 20,
     chemostatted_values: dict[str, float] | None = None,
+    t_end: float = 1e4,
 ) -> BifurcationResult:
-    """Vary one rate constant over a log-spaced range and collect steady states."""
+    """
+    Vary one rate constant over a log-spaced range and collect steady states.
+
+    Parameters
+    ----------
+    t_end : float
+        ODE integration horizon passed to ``find_steady_states`` at each point.
+        See that function's ``t_end`` documentation for guidance on choosing a
+        value appropriate for the slowest reaction timescale in your network.
+    """
     from .parsing import normalize_rate_key
     try:
         norm_param = normalize_rate_key(parameter)
@@ -439,6 +549,7 @@ def scan_bifurcation(
             reactions, species, rates, initial_conditions,
             n_attempts=n_attempts, seed=42,
             chemostatted_values=chemostatted_values,
+            t_end=t_end,
         )
         all_ss.append(ss_list)
 

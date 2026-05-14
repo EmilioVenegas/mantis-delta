@@ -1,4 +1,4 @@
-"""CRNetwork: unified interface for CRNT structural analysis, symbolic ODEs, and numerical steady-state finding."""
+"""CRNetwork: unified interface for CRNT structural analysis, symbolic ODEs, ODE simulation, and steady-state finding."""
 from __future__ import annotations
 
 from functools import cached_property
@@ -220,6 +220,7 @@ class CRNetwork:
         initial_conditions: dict[str, float],
         n_attempts: int = 50,
         seed: int | None = None,
+        t_end: float = 1e4,
     ) -> list:
         """
         Find steady states from the given initial conditions.
@@ -239,6 +240,9 @@ class CRNetwork:
             Total number of solver attempts (including the integration from IC).
         seed : int, optional
             RNG seed for reproducibility.
+        t_end : float
+            ODE integration horizon in seconds (default 1e4).  Increase for
+            systems with slow reactions whose timescale τ = 1/(k·[X]) >> 1e4 s.
 
         Returns
         -------
@@ -255,6 +259,7 @@ class CRNetwork:
             n_attempts=n_attempts,
             seed=seed,
             chemostatted_values=self._chemostatted or None,
+            t_end=t_end,
         )
 
     def bifurcation(
@@ -264,6 +269,7 @@ class CRNetwork:
         n_points: int = 100,
         initial_conditions: dict[str, float] | None = None,
         plot: bool = False,
+        t_end: float = 1e4,
     ) -> object:
         """
         Scan one rate constant over a log-spaced range and collect steady states.
@@ -280,6 +286,9 @@ class CRNetwork:
             Initial concentrations for each scan point (defaults to all-zero).
         plot : bool
             If True, display a bifurcation diagram for the first species.
+        t_end : float
+            ODE integration horizon in seconds (default 1e4).  Increase for
+            systems with slow reactions whose timescale τ = 1/(k·[X]) >> 1e4 s.
 
         Returns
         -------
@@ -296,11 +305,55 @@ class CRNetwork:
             initial_conditions=initial_conditions or {},
             n_attempts=20,
             chemostatted_values=self._chemostatted or None,
+            t_end=t_end,
         )
         if plot:
             from .plot import plot_bifurcation
             plot_bifurcation(result, species=self.species[0])
         return result
+
+    def simulate(
+        self,
+        initial_conditions: dict[str, float],
+        t_span: tuple[float, float],
+        t_eval=None,
+        rtol: float = 1e-8,
+        atol: float = 1e-12,
+    ):
+        """
+        Integrate the ODE system forward in time and return the full trajectory.
+
+        Parameters
+        ----------
+        initial_conditions : dict[str, float]
+            Initial concentrations; missing species default to 0.
+        t_span : (t0, tf)
+            Start and end times in seconds.
+        t_eval : array-like, optional
+            Times at which to store the solution.  Defaults to 200 log-spaced
+            points across t_span.
+        rtol, atol : float
+            Solver tolerances (passed to scipy Radau).
+
+        Returns
+        -------
+        SimulationResult
+            ``.times``, ``.concentrations`` (dict species → 1-D array),
+            ``.success``.  Use ``.final()`` for the last time-point dict
+            or ``.at(t)`` for a specific time.
+        """
+        from .analysis import simulate_ode
+        return simulate_ode(
+            self._reactions,
+            self.species,
+            self._rates,
+            initial_conditions,
+            t_span=t_span,
+            t_eval=t_eval,
+            chemostatted_values=self._chemostatted or None,
+            rtol=rtol,
+            atol=atol,
+        )
 
     def draw(self, ax=None, layout: str = "spring") -> matplotlib.axes.Axes:
         from .plot import draw_reaction_graph
