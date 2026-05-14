@@ -21,8 +21,8 @@ abstract: |
   complex reaction graph, computes the deficiency $\delta = n - \ell - s$ and
   weak reversibility, and decides applicability of the Deficiency Zero
   Theorem (DZT) and Deficiency One Theorem (D1T). For systems satisfying
-  these structural conditions, `pycrn` certifies---without any simulation
-  whatsoever---existence, uniqueness and (for DZT) asymptotic stability of
+  these structural conditions, `pycrn` certifies, without any simulation
+  whatsoever, existence, uniqueness and (for DZT) asymptotic stability of
   the positive steady state in every stoichiometric compatibility class.
   When the structural theorems do not apply, the library provides symbolic
   mass-action ODEs and Jacobians via SymPy and a hybrid numerical solver
@@ -176,8 +176,8 @@ $O(10^{0}\text{--}10^{2})$ kinetic parameters that are seldom known to better
 than one order of magnitude in living systems. A central insight of
 twentieth-century mathematical chemistry, originating in the work of Horn,
 Jackson, and Feinberg, is that a substantial portion of the qualitative
-behaviour---existence and uniqueness of equilibria, monostability,
-impossibility of oscillation---is dictated by *purely structural*
+behaviour, existence and uniqueness of equilibria, monostability,
+impossibility of oscillation, is dictated by *purely structural*
 invariants of the reaction graph [@horn1972general; @feinberg1972complex;
 @feinberg1987chemical]. The two cornerstones of this body of results are
 the Deficiency Zero Theorem [@horn1972general; @feinberg1987chemical] and
@@ -198,7 +198,7 @@ that (i) accepts the reaction strings biochemists actually write, (ii)
 exposes the mass-action ODEs and Jacobian symbolically through SymPy
 [@meurer2017sympy], and (iii) couples the structural analysis to a robust
 numerical solver capable of finding both stable and *unstable* fixed
-points---the latter being indispensable for the location of Hopf
+points, the latter being indispensable for the location of Hopf
 bifurcation centres in chemostatted, open systems [@prigogine1968symmetry].
 
 In this paper we introduce `pycrn`, a small Python library that fills this
@@ -713,8 +713,8 @@ Compared with the foundational Chemical Reaction Network Toolbox
 @soliman2012crnpy, `pycrn` offers (i) an idiomatic Python API tailored to
 the modern scientific stack [@harris2020array; @virtanen2020scipy], (ii)
 first-class support for chemostatted (open) networks in the spirit of
-@polettini2014irreversible---including the algebraic location of
-Hopf-unstable fixed points that forward integration cannot reach---and
+@polettini2014irreversible, including the algebraic location of
+Hopf-unstable fixed points that forward integration cannot reach, and
 (iii) symbolic ODE/Jacobian expressions ready for downstream pipelines
 such as parameter inference, sensitivity analysis, or thermodynamic
 constraint checking [@ederer2007thermodynamically].
