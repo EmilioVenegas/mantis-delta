@@ -186,3 +186,49 @@ plt.tight_layout()
 out_path2 = _here / "brusselator_stable.png"
 fig2.savefig(out_path2, dpi=150)
 print(f"Plot saved to {out_path2}")
+
+# ── 6. Combined publication figure (2x2: oscillatory + stable) ─────────────
+fig3, ax = plt.subplots(2, 2, figsize=(11, 7.5))
+
+# Top row: oscillatory (B=3)
+ax[0, 0].plot(sol.t, X_sol, color="#2196F3", label="X")
+ax[0, 0].plot(sol.t, Y_sol, color="#F44336", label="Y")
+ax[0, 0].axhline(X_star, color="#2196F3", linestyle=":", linewidth=0.8, alpha=0.6)
+ax[0, 0].axhline(Y_star, color="#F44336", linestyle=":", linewidth=0.8, alpha=0.6)
+ax[0, 0].set_xlabel("Time (s)")
+ax[0, 0].set_ylabel("Concentration")
+ax[0, 0].set_title("(a) Time series — B = 3 (oscillatory)")
+ax[0, 0].legend(loc="upper right", framealpha=0.85)
+ax[0, 0].set_xlim(0, 40)
+
+ax[0, 1].plot(X_sol[transient_mask], Y_sol[transient_mask], color="grey",
+              linewidth=0.8, alpha=0.5, label="Transient")
+ax[0, 1].plot(X_sol[lc_mask], Y_sol[lc_mask], color="#4CAF50",
+              linewidth=1.5, label="Limit cycle")
+ax[0, 1].scatter([X_star], [Y_star], color="black", s=50, zorder=5,
+                 label=f"Unstable focus ({X_star:.0f}, {Y_star:.0f})")
+ax[0, 1].set_xlabel("X")
+ax[0, 1].set_ylabel("Y")
+ax[0, 1].set_title("(b) Phase portrait — B = 3")
+ax[0, 1].legend(loc="upper right", framealpha=0.85, fontsize=9)
+
+# Bottom row: stable spiral (B=1.5)
+ax[1, 0].plot(sol_s.t, X_s, color="#2196F3", label="X")
+ax[1, 0].plot(sol_s.t, Y_s, color="#F44336", label="Y")
+ax[1, 0].set_xlabel("Time (s)")
+ax[1, 0].set_ylabel("Concentration")
+ax[1, 0].set_title(f"(c) Time series — B = {B_stable} (damped)")
+ax[1, 0].legend(loc="upper right", framealpha=0.85)
+
+ax[1, 1].plot(X_s, Y_s, color="#FF9800", linewidth=1.5, label="Trajectory")
+ax[1, 1].scatter([A_val], [B_stable/A_val], color="black", s=50, zorder=5,
+                 label=f"Stable spiral ({A_val:.0f}, {B_stable:.1f})")
+ax[1, 1].set_xlabel("X")
+ax[1, 1].set_ylabel("Y")
+ax[1, 1].set_title(f"(d) Phase portrait — B = {B_stable}")
+ax[1, 1].legend(loc="upper right", framealpha=0.85, fontsize=9)
+
+plt.tight_layout()
+out_path3 = _here / "brusselator_combined.png"
+fig3.savefig(out_path3, dpi=150)
+print(f"Combined figure saved to {out_path3}")

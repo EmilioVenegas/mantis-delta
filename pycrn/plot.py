@@ -8,11 +8,43 @@ if TYPE_CHECKING:
     import networkx as nx
 
 
+_SUBSCRIPT_DIGITS = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+
+
+def _prettify_species(name: str) -> str:
+    """Turn ASCII species names into typographically nicer forms.
+
+    Trailing digits become Unicode subscripts (`H1` → `H₁`); underscores that
+    join species into a complex name become the centred dot (`H1H2_CP` →
+    `H₁H₂·CP`).
+    """
+    parts = name.split("_")
+    pretty_parts = []
+    for part in parts:
+        # subscript any run of digits that follows an alphabetic prefix
+        out, buf, in_digits = [], [], False
+        for ch in part:
+            if ch.isdigit():
+                buf.append(ch)
+                in_digits = True
+            else:
+                if in_digits:
+                    out.append("".join(buf).translate(_SUBSCRIPT_DIGITS))
+                    buf = []
+                    in_digits = False
+                out.append(ch)
+        if in_digits:
+            out.append("".join(buf).translate(_SUBSCRIPT_DIGITS))
+        pretty_parts.append("".join(out))
+    return "·".join(pretty_parts)
+
+
 def _complex_label(c) -> str:
     """Human-readable label for a Complex (frozenset of (name, coeff) pairs)."""
     parts = []
     for name, coeff in sorted(c, key=lambda x: x[0]):
-        parts.append(f"{coeff}{name}" if coeff > 1 else name)
+        sp = _prettify_species(name)
+        parts.append(f"{coeff}{sp}" if coeff > 1 else sp)
     return " + ".join(parts) if parts else "∅"
 
 
@@ -65,74 +97,157 @@ def _layout_components(
     return pos
 
 
+# A small qualitative palette for linkage classes (colour-blind safe, muted).
+_LC_PALETTE = [
+    "#4C78A8", "#F58518", "#54A24B", "#E45756",
+    "#72B7B2", "#B279A2", "#FF9DA6", "#9D755D",
+    "#BAB0AC", "#EECA3B",
+]
+
+
 def draw_reaction_graph(
     G: nx.DiGraph,
     ax=None,
-    layout: str = "spring",
-    node_color: str = "#AED6F1",
-    edge_color: str = "#2C3E50",
-    node_size: int = 900,
-    font_size: int = 8,
+    layout: str = "kamada_kawai",
+    font_size: int = 9,
+    annotate_stats: bool = True,
+    show_legend: bool = True,
 ) -> matplotlib.axes.Axes:
     """
-    Draw the complex reaction graph.
+    Publication-style rendering of the *complex reaction graph*.
 
-    Nodes are reaction complexes; directed edges are reactions.
-    Disconnected linkage classes are arranged in a grid so they do not
-    overlap.  Nodes, edges, and labels are drawn separately so that
-    arrow heads are correctly placed at the node boundary and labels
-    have a white background box for legibility.
+    Each node is a chemical complex (multiset of species) — *not* a single
+    species. This is the convention required by Feinberg's framework: the
+    deficiency δ = n − ℓ − s counts complexes (n) and linkage classes (ℓ)
+    of this graph. A species-resolved view (Petri net / SR-graph) would be
+    a different object; see ``draw_species_reaction_graph`` for that.
+
+    Reversible reactions are rendered as a single double-headed arrow.
+    Each weakly connected component (linkage class) is tinted with its
+    own colour so the partition that enters the deficiency formula is
+    visually explicit.
     """
     import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
     import networkx as nx
+    import numpy as np
 
     if ax is None:
-        _, ax = plt.subplots(figsize=(10, 6))
+        _, ax = plt.subplots(figsize=(11, 7))
 
     layouts = {
-        "spring":   nx.spring_layout,
-        "shell":    nx.shell_layout,
-        "spectral": nx.spectral_layout,
-        "planar":   nx.planar_layout,
+        "spring":       nx.spring_layout,
+        "shell":        nx.shell_layout,
+        "spectral":     nx.spectral_layout,
+        "planar":       nx.planar_layout,
         "kamada_kawai": nx.kamada_kawai_layout,
     }
-    layout_fn = layouts.get(layout, nx.spring_layout)
+    layout_fn = layouts.get(layout, nx.kamada_kawai_layout)
     pos = _layout_components(G, layout_fn)
 
-    # 1. Nodes
-    nx.draw_networkx_nodes(
-        G, pos, ax=ax,
-        node_color=node_color,
-        node_size=node_size,
-        linewidths=0.8,
-        edgecolors="#5D8AA8",
-    )
+    # Set data limits from node positions (set_axis_off disables autoscale).
+    if pos:
+        xs = [p[0] for p in pos.values()]
+        ys = [p[1] for p in pos.values()]
+        pad_x = max(0.6, 0.18 * (max(xs) - min(xs) if len(xs) > 1 else 1.0))
+        pad_y = max(0.6, 0.18 * (max(ys) - min(ys) if len(ys) > 1 else 1.0))
+        ax.set_xlim(min(xs) - pad_x, max(xs) + pad_x)
+        ax.set_ylim(min(ys) - pad_y, max(ys) + pad_y)
 
-    # 2. Edges — draw separately so node_size is used for correct arrowhead offset
-    nx.draw_networkx_edges(
-        G, pos, ax=ax,
-        edge_color=edge_color,
-        arrows=True,
-        arrowsize=18,
-        arrowstyle="-|>",
-        node_size=node_size,
-        connectionstyle="arc3,rad=0.18",
-        width=1.4,
-        min_source_margin=15,
-        min_target_margin=15,
-    )
+    # Assign each linkage class a colour.
+    wccs = sorted(nx.weakly_connected_components(G), key=len, reverse=True)
+    lc_color = {}
+    for i, wcc in enumerate(wccs):
+        c = _LC_PALETTE[i % len(_LC_PALETTE)]
+        for node in wcc:
+            lc_color[node] = c
 
-    # 3. Labels — white bbox so they stay readable over edges/nodes
-    labels = {node: _complex_label(node) for node in G.nodes()}
-    nx.draw_networkx_labels(
-        G, pos, labels, ax=ax,
-        font_size=font_size,
-        font_color="#1a1a2e",
-        bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="none", alpha=0.85),
-    )
+    # ── 1. Labels via rounded-box patches (drawn first so edges can clip to them) ──
+    label_artists = {}
+    for node, (x, y) in pos.items():
+        txt = _complex_label(node)
+        artist = ax.text(
+            x, y, txt,
+            ha="center", va="center",
+            fontsize=font_size,
+            family="DejaVu Sans",
+            color="#1a1a2e",
+            zorder=3,
+            bbox=dict(
+                boxstyle="round,pad=0.45",
+                fc="white",
+                ec=lc_color[node],
+                lw=1.4,
+            ),
+        )
+        label_artists[node] = artist
+
+    # Force a draw so each text patch has a real bounding box for arrow clipping.
+    ax.figure.canvas.draw()
+
+    # ── 2. Edges — collapse reversible pairs into a single double-headed arrow ──
+    seen = set()
+    for u, v in G.edges():
+        if (u, v) in seen or (v, u) in seen:
+            continue
+        reversible = G.has_edge(v, u)
+        seen.add((u, v))
+
+        arrowstyle = "<|-|>" if reversible else "-|>"
+        ax.annotate(
+            "",
+            xy=pos[v], xycoords="data",
+            xytext=pos[u], textcoords="data",
+            arrowprops=dict(
+                arrowstyle=arrowstyle,
+                color="#2C3E50",
+                lw=1.3,
+                shrinkA=22, shrinkB=22,           # leave room for the label boxes
+                connectionstyle="arc3,rad=0.0",
+                mutation_scale=14,
+            ),
+            zorder=1,
+        )
+
+    # ── 3. Stats annotation (n, ℓ, s, δ if computable) ──
+    if annotate_stats:
+        n = G.number_of_nodes()
+        ell = len(wccs)
+        stats_lines = [f"n = {n}  complexes", f"ℓ = {ell}  linkage class{'es' if ell != 1 else ''}"]
+        # The graph alone doesn't carry s or δ, so we just print n and ℓ.
+        ax.text(
+            0.01, 0.98,
+            "\n".join(stats_lines),
+            transform=ax.transAxes,
+            ha="left", va="top",
+            fontsize=9, family="DejaVu Sans",
+            bbox=dict(boxstyle="round,pad=0.4", fc="#FAFAFA",
+                      ec="#BDC3C7", lw=0.8),
+            zorder=4,
+        )
+
+    # ── 4. Legend mapping colour → linkage class ──
+    if show_legend and len(wccs) > 1:
+        handles = [
+            mpatches.Patch(
+                facecolor="white",
+                edgecolor=_LC_PALETTE[i % len(_LC_PALETTE)],
+                linewidth=1.4,
+                label=f"Linkage class {i+1}",
+            )
+            for i in range(len(wccs))
+        ]
+        ax.legend(
+            handles=handles,
+            loc="upper right",
+            frameon=True,
+            framealpha=0.95,
+            fontsize=8,
+            handlelength=1.4,
+        )
 
     ax.set_axis_off()
-    ax.margins(0.15)
+    ax.margins(0.18)
     return ax
 
 

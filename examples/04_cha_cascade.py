@@ -58,25 +58,25 @@ rn = CRNetwork.from_string(CHA_STRINGS, rates=CHA_RATES)
 print()
 print(rn.crnt_summary())
 
-# ── 3. Conservation laws ─────────────────────────────────────────────────────
-print()
-print("Conservation laws:")
-for i, law in enumerate(rn.conservation_laws, 1):
-    print(f"  [{i}] {law} = const")
-
-# ── 4. Symbolic ODEs ─────────────────────────────────────────────────────────
+# ── 3. Symbolic ODEs ─────────────────────────────────────────────────────────
 print()
 print("Symbolic ODEs (with numeric rates):")
 odes = rn.odes(numeric_rates=True)
 for sp in sorted(odes):
     print(f"  d{sp}/dt = {odes[sp]}")
 
-# ── 5. Steady-state analysis ─────────────────────────────────────────────────
+# ── 4. Steady-state analysis ─────────────────────────────────────────────────
 print()
 print("Solving for steady state ([miR21]₀ = 10 nM) ...")
 ss_list = rn.steady_states(CHA_IC, n_attempts=30, seed=0)
-print(f"  Found {len(ss_list)} steady state(s)")
-ss = ss_list[0]
+# D1T guarantees ≤1 SS per stoichiometry class; extras are numerical duplicates.
+n_stable = sum(1 for s in ss_list if s.is_stable)
+if len(ss_list) > 1:
+    print(f"  Found {len(ss_list)} candidate(s) ({n_stable} stable) — "
+          f"D1T guarantees ≤1; reporting best by residual.")
+else:
+    print(f"  Found {len(ss_list)} steady state(s)")
+ss = ss_list[0]  # sorted by residual ascending; always the best solution
 
 print()
 print("Steady-state concentrations:")
@@ -136,11 +136,11 @@ fig.savefig(out_path, dpi=150)
 print(f"  Bifurcation plot saved to {out_path}")
 
 # ── 8. Reaction graph ────────────────────────────────────────────────────────
-fig2, ax2 = plt.subplots(figsize=(10, 6))
+fig2, ax2 = plt.subplots(figsize=(11, 7))
 rn.draw(ax=ax2)
-ax2.set_title("CHA Reaction Graph")
+plt.tight_layout()
 out_path2 = _here / "cha_reaction_graph.png"
-fig2.savefig(out_path2, dpi=150, bbox_inches="tight")
+fig2.savefig(out_path2, dpi=160)
 print(f"  Reaction graph saved to {out_path2}")
 
 print()

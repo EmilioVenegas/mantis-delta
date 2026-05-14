@@ -2,15 +2,15 @@
 title: "pycrn: A Python library for structural and numerical analysis of chemical reaction networks under mass-action kinetics"
 shorttitle: "pycrn: Chemical Reaction Network Theory in Python"
 author:
-  - name: Emilio Venegas
+  - name: Emilio A. Venegas
     email: emiliovenegas10@gmail.com
-    orcid: 0000-0000-0000-0000
     corresponding: true
     affiliations:
-      - name: Independent Researcher
-        address: ""
-        city: ""
-        country: ""
+      - name: Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud
+        address: "Ave. Eugenio Garza Sada 2501 Sur, Col. Tecnológico"
+        city: "Monterrey, N.L."
+        postal-code: "64700"
+        country: "México"
 date: today
 abstract: |
   Chemical Reaction Network Theory (CRNT), developed by Horn, Jackson, and
@@ -82,26 +82,58 @@ geometry:
   - margin=1in
 linestretch: 1.25
 papersize: letter
-mainfont: "Liberation Serif"
+mainfont: "Times New Roman"
+sansfont: "Arial"
+monofont: "Courier New"
 linkcolor: NavyBlue
 citecolor: NavyBlue
 urlcolor: NavyBlue
 format:
   pdf:
-    documentclass: scrartcl
+    documentclass: article
     pdf-engine: xelatex
     toc: false
     colorlinks: true
     include-in-header:
       text: |
-        \usepackage{amsmath,amssymb,amsthm}
+        \usepackage{unicode-math}
+        \setmathfont[
+          Path=/home/emiliovenegas/.TinyTeX/texmf-dist/fonts/opentype/public/xits/,
+          BoldFont=XITSMath-Bold.otf
+        ]{XITSMath-Regular.otf}
         \usepackage{mathtools}
         \usepackage{booktabs}
         \usepackage{microtype}
         \usepackage{siunitx}
         \usepackage{graphicx}
         \usepackage[font=small,labelfont=bf]{caption}
-        \renewcommand{\abstractname}{\textsc{Abstract}}
+        \usepackage{abstract}
+        \renewcommand{\absnamepos}{flushleft}
+        \setlength{\absleftindent}{0pt}
+        \setlength{\absrightindent}{0pt}
+        \renewcommand{\abstractname}{\textbf{Abstract}}
+        \usepackage{titlesec}
+        \titleformat{\section}{\normalfont\large\bfseries}{\thesection}{1em}{}
+        \titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{1em}{}
+        \titleformat{\subsubsection}{\normalfont\normalsize\itshape}{\thesubsubsection}{1em}{}
+        % ── Custom title block with affiliation (overrides Quarto default) ──
+        \makeatletter
+        \renewcommand{\maketitle}{%
+          \begin{center}%
+            {\LARGE \@title \par}%
+            \vspace{1.5em}%
+            {\large Emilio A.\ Venegas\textsuperscript{1,\,*}\par}%
+            \vspace{0.6em}%
+            {\small\itshape\textsuperscript{1}Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud,\\
+              Ave.\ Eugenio Garza Sada 2501 Sur, Col.\ Tecnológico, Monterrey, N.L.\ 64700, México\par}%
+            \vspace{0.5em}%
+            {\small\textsuperscript{*}Correspondence: \texttt{emiliovenegas10@gmail.com}\par}%
+            \vspace{0.9em}%
+            {\@date\par}%
+          \end{center}%
+          \vspace{0.8em}%
+        }
+        \makeatother
   html:
     toc: true
     toc-depth: 3
@@ -129,12 +161,14 @@ execute:
   Grant numbers:           N/A
   Distribution / reuse:    CC-BY 4.0 (manuscript), MIT (software)
   Manuscript files:        pycrn_preprint.qmd → renders to PDF via XeLaTeX
-  Image files:             cha_kinetics_analysis.png, cha_kinetics_species.png,
-                           cha_bifurcation.png, cha_reaction_graph.png,
-                           brusselator_oscillations.png, brusselator_stable.png,
-                           gk_switch_dose_response.png
+  Image files (figures):   michaelis_menten.png       (Fig. 1, §3.2)
+                           brusselator_combined.png   (Fig. 2, §3.3)
+                           cha_kinetics_species.png   (Fig. 3, §3.4)
+                           cha_bifurcation.png        (Fig. 4, §3.4)
+                           gk_switch_dose_response.png (Fig. 5, §3.5)
+                           cha_reaction_graph.png     (Fig. 6, §3.6)
   Image formats:           PNG (accepted by bioRxiv submission system)
-  Fonts:                   Times New Roman (preferred by submission system)
+  Fonts:                   Times New Roman (text), XITS Math (math)
   ─────────────────────────────────────────────────────────────────────
 -->
 
@@ -451,8 +485,21 @@ $$
 \qquad
 K_M \;=\; \frac{k_r + k_{\mathrm{cat}}}{k_f}
 $$ {#eq-qss}
-agrees with the full mass-action value of $[ES]^\ast$ obtained by `pycrn`
-to better than $1\%$.
+tracks the full mass-action concentration $[ES](t)$ obtained by `pycrn`
+to better than $0.25\%$ throughout the catalytic phase
+(Fig.\ [-@fig-mm]). At the true mathematical steady state the irreversible
+catalytic step drives all substrate to product, so $[ES]^\ast = 0$;
+the practical relevance of the QSS approximation is therefore as a
+*dynamic* tracker during enzyme turnover rather than as a steady-state
+identity.
+
+![Michaelis--Menten enzyme kinetics. (a) Full mass-action time course
+($E_0 = 1\,\mu\mathrm{M}$, $S_0 = 100\,\mu\mathrm{M}$) on a twin-axis plot:
+$S$ and $P$ on the left axis, $E$ and $ES$ on the right. (b) Comparison of
+the full mass-action $[ES](t)$ (solid) with the quasi-steady-state
+approximation $E_0\,[S](t)/(K_M+[S](t))$ (dashed); the two curves overlap
+to within $0.25\%$ after the initial $\sim 5\,\mathrm{ms}$ transient.
+Generated by `examples/02_michaelis_menten.py`.](../examples/michaelis_menten.png){#fig-mm width=90%}
 
 ## Brusselator: Hopf bifurcation under chemostatting {#sec-bruss}
 
@@ -503,10 +550,15 @@ with positive real part, correctly classifying the fixed point as an
 unstable focus. For $B = 1.5 < 1 + A^{2}$ the same fixed point becomes a
 stable spiral.
 
-![Brusselator dynamics with $A$ and $B$ chemostatted. Left: oscillatory
-time series and limit cycle ($B = 3$). Right: damped spiral toward the
-fixed point ($B = 1.5$). The black dot marks the algebraic equilibrium
-returned by `pycrn`. Figures generated by `examples/05_brusselator_chemostatted.py`.](../examples/brusselator_oscillations.png){#fig-bruss width=85%}
+![Brusselator dynamics with $A$ and $B$ chemostatted. Top row ($B = 3$,
+oscillatory): (a) time series of $X$ and $Y$; (b) phase portrait showing
+the transient (grey) relaxing onto the limit cycle (green) that orbits the
+algebraic fixed point $(X^\ast, Y^\ast) = (1, 3)$, classified as an
+unstable focus by `pycrn`. Bottom row ($B = 1.5$, damped):
+(c) time series; (d) phase portrait spiralling into the stable equilibrium
+$(1, 1.5)$. The black markers indicate the equilibria returned by
+`pycrn`'s algebraic solver. Generated by
+`examples/05_brusselator_chemostatted.py`.](../examples/brusselator_combined.png){#fig-bruss width=95%}
 
 ## CHA miR-21 biosensor: parameter-free uniqueness via D1T {#sec-cha}
 
@@ -543,14 +595,28 @@ $H_{2,\mathrm{tot}}$, $\mathrm{CP}_{\mathrm{tot}}$) as a non-negative
 integer basis of $\operatorname{LeftNull}(\mathbf{N})$.
 
 With $H_{1,0} = H_{2,0} = \mathrm{CP}_0 = 100\,\mathrm{nM}$ and
-$[\mathrm{miR21}]_0 = 10\,\mathrm{nM}$, the hybrid solver returns the
-unique equilibrium $[H_{1}\!:\!H_{2}\!:\!\mathrm{CP}]^\ast = 0.34\,\mathrm{nM}$,
-with $\operatorname{Re}\lambda < 0$ for all significant eigenvalues
+$[\mathrm{miR21}]_0 = 10\,\mathrm{nM}$, mass-action integration of the
+network (Fig.\ [-@fig-cha-kin]) reveals the characteristic catalytic
+turnover: miR-21 is rapidly consumed into the miR21$\cdot$H$_1$ complex,
+which is then displaced by H$_2$ to regenerate free miR-21 and form the
+H$_1\!:\!H_2$ dimer that binds the capture probe. The hybrid solver
+returns the unique equilibrium
+$[H_{1}\!:\!H_{2}\!:\!\mathrm{CP}]^\ast = 0.34\,\mathrm{nM}$, with
+$\operatorname{Re}\lambda < 0$ for all significant eigenvalues
 ($\operatorname{Re}\lambda_{\max} \approx -3 \times 10^{-3}\,\mathrm{s^{-1}}$).
 A log-spaced scan over $[\mathrm{miR21}]_0 \in [0.1, 100]\,\mathrm{nM}$
 (Fig.\ [-@fig-cha]) confirms the D1T prediction empirically: the
 dose-response curve is single-valued and monotone, with no hint of
 hysteresis or alternative branches.
+
+![Mass-action kinetics of the CHA cascade at four miR-21 trigger
+concentrations (10 nM, 1 nM, 100 pM, and no-trigger leakage-only control).
+The reporter complex $H_{1}\!:\!H_{2}\!:\!\mathrm{CP}$ (dashed black) is
+the electrochemical output; H$_1$ and H$_2$ are the fuel hairpins held at
+$100\,\mathrm{nM}$. The leakage-only panel demonstrates that, at the rate
+constants returned by NUPACK, spontaneous H$_1\!:\!H_2$ dimerisation is
+negligible over a $120\,\mathrm{min}$
+window.](../examples/cha_kinetics_species.png){#fig-cha-kin width=95%}
 
 ![Steady-state reporter signal $[H_{1}\!:\!H_{2}\!:\!\mathrm{CP}]^\ast$
 as a function of the initial miR-21 concentration. The single-valued,
@@ -704,8 +770,8 @@ experiments, and wrote the manuscript.
 # Acknowledgements {.unnumbered}
 
 The author acknowledges the open-source scientific Python ecosystem
-([@harris2020array; @virtanen2020scipy; @meurer2017sympy;
-@hagberg2008exploring]) without which this work would not have been
+[@harris2020array; @virtanen2020scipy; @meurer2017sympy;
+@hagberg2008exploring] without which this work would not have been
 possible.
 
 # References {.unnumbered}

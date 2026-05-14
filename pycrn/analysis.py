@@ -257,6 +257,9 @@ def find_steady_states(
 
     Chemostatted species are folded into effective rate constants so the ODE
     system only tracks dynamic species.
+
+    Returns a list of SteadyState objects, sorted by true ODE residual (lowest first),
+    filtered to remove duplicate states and high-residual algebraic artifacts.
     """
     from .stoichiometry import fold_chemostatted_into_rates
     chem_vals = chemostatted_values or {}
@@ -276,15 +279,17 @@ def find_steady_states(
 
     collected: list[SteadyState] = []
 
-    def _try_add(y_sol: np.ndarray, residual: float) -> None:
-        if residual > 1e-4:
-            return
+    def _try_add(y_sol: np.ndarray, _residual_hint: float) -> None:
+        y_sol = np.maximum(y_sol, 0.0)
+        # Recompute the true ODE residual |dy/dt|.  We store it for post-filtering
+        # (relative to the best-found solution) rather than applying a fixed absolute
+        # threshold, which fails on stiff systems where all flux magnitudes are tiny.
+        abs_res = float(np.linalg.norm(f_ode(0, y_sol)))
         if np.any(y_sol < -tol):
             return
-        y_sol = np.maximum(y_sol, 0.0)
         for existing in collected:
             y_ex = np.array([existing.concentrations[s] for s in species])
-            if np.linalg.norm(y_sol - y_ex) / (np.linalg.norm(y_ex) + 1e-30) < 0.01:
+            if np.linalg.norm(y_sol - y_ex) / (np.linalg.norm(y_ex) + 1e-30) < 0.10:
                 return
         J_num = full_jac(y_sol)
         eigs = eigvals(J_num)
@@ -294,7 +299,7 @@ def find_steady_states(
             eigenvalues=eigs,
             is_stable=is_stable,
             is_oscillatory=is_osc,
-            residual=residual,
+            residual=abs_res,
         )
         collected.append(ss)
 
@@ -357,6 +362,14 @@ def find_steady_states(
             y0 = np.maximum(y0, 1e-12)
             _try_least_squares(y0)
 
+    collected.sort(key=lambda s: s.residual)
+    # Post-filter: drop candidates whose ODE residual is more than 1e4× worse than
+    # the best (lowest-residual) solution.  This correctly handles stiff systems
+    # where all fluxes are tiny in absolute terms — a relative comparison is the
+    # only meaningful discriminant between "converged" and "stuck-at-IC" solutions.
+    if collected:
+        best_res = collected[0].residual
+        collected = [s for s in collected if s.residual <= best_res * 1e4 + 1e-30]
     return collected
 
 

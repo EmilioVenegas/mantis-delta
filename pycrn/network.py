@@ -226,8 +226,10 @@ class CRNetwork:
 
         Uses ODE integration (Radau) as the primary strategy, which exactly
         preserves conservation laws, then falls back to multi-start least_squares
-        for additional steady states.  Duplicate solutions (relative L2 distance
-        < 1%) and non-physical solutions (any concentration < −tol) are discarded.
+        for additional steady states. Duplicate solutions (relative L2 distance
+        < 10%) and non-physical solutions (any concentration < −tol) are discarded.
+        Results are sorted by residual ascending and filtered by relative residual
+        against the best solution found to remove spurious stuck-at-IC artifacts.
 
         Parameters
         ----------
