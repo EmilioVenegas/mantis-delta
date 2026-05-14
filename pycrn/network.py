@@ -51,6 +51,7 @@ class CRNetwork:
         self,
         reactions: list[Reaction],
         rates: dict[str, float] | None = None,
+        chemostatted: dict[str, float] | None = None,
     ) -> None:
         self._reactions = reactions
         self._rates: dict[str, float] = {}
@@ -62,12 +63,14 @@ class CRNetwork:
                 except ValueError:
                     norm = key
                 self._rates[norm] = val
+        self._chemostatted: dict[str, float] = dict(chemostatted) if chemostatted else {}
 
     @classmethod
     def from_string(
         cls,
         reaction_strings: list[str],
         rates: dict[str, float] | None = None,
+        chemostatted: dict[str, float] | None = None,
     ) -> CRNetwork:
         """
         Construct from human-readable reaction strings.
@@ -79,15 +82,19 @@ class CRNetwork:
         rates : dict[str, float], optional
             Maps reaction strings to rate constants.  Order of species within each
             side does not matter; keys are normalized before lookup.
+        chemostatted : dict[str, float], optional
+            Species held at fixed concentrations by an external reservoir.
+            They are excluded from the ODE system and stoichiometry matrix rows,
+            but their concentrations are folded into flux expressions.
         """
         reactions = parse_reactions(reaction_strings)
-        return cls(reactions, rates)
+        return cls(reactions, rates, chemostatted)
 
     # ── Structural properties (no rates needed) ──────────────────────────────
 
     @cached_property
     def species(self) -> list[str]:
-        return build_species_list(self._reactions)
+        return build_species_list(self._reactions, set(self._chemostatted.keys()))
 
     @cached_property
     def complexes(self) -> list[Complex]:
@@ -111,7 +118,7 @@ class CRNetwork:
 
     @cached_property
     def _crnt_graph(self) -> nx.DiGraph:
-        return build_complex_graph(self._reactions)
+        return build_complex_graph(self._reactions, set(self._chemostatted.keys()))
 
     @cached_property
     def n_linkage_classes(self) -> int:
@@ -131,7 +138,12 @@ class CRNetwork:
 
     @cached_property
     def _crnt_result(self) -> CRNTResult:
-        return crnt_analysis(self._reactions, self.stoichiometry_matrix, self.species)
+        return crnt_analysis(self._reactions, self.stoichiometry_matrix, self.species, set(self._chemostatted.keys()))
+
+    @property
+    def chemostatted(self) -> dict[str, float]:
+        """Chemostatted species and their fixed concentrations."""
+        return dict(self._chemostatted)
 
     def rate_keys(self) -> list[str]:
         """Return canonical rate key strings for all reactions (for debugging)."""
@@ -141,6 +153,10 @@ class CRNetwork:
         """Return a human-readable CRNT analysis summary."""
         r = self._crnt_result
         lines = list(r.summary_lines)
+        if self._chemostatted:
+            chem_str = ", ".join(f"{s}={v}" for s, v in sorted(self._chemostatted.items()))
+            lines.insert(0, f"Chemostatted species: {chem_str}")
+            lines.insert(1, "")
         lines.append("")
         laws = self.conservation_laws
         lines.append(f"Conservation laws ({len(laws)}):")
@@ -169,7 +185,8 @@ class CRNetwork:
         sp_syms = make_species_symbols(self.species)
         rate_syms, key_to_sym = make_rate_symbols(self._reactions)
         odes_sym = build_odes(
-            self._reactions, self.species, sp_syms, rate_syms, key_to_sym
+            self._reactions, self.species, sp_syms, rate_syms, key_to_sym,
+            chemostatted_values=self._chemostatted or None,
         )
         if numeric_rates and self._rates:
             odes_sym = {
@@ -235,6 +252,7 @@ class CRNetwork:
             initial_conditions,
             n_attempts=n_attempts,
             seed=seed,
+            chemostatted_values=self._chemostatted or None,
         )
 
     def bifurcation(
@@ -275,6 +293,7 @@ class CRNetwork:
             n_points=n_points,
             initial_conditions=initial_conditions or {},
             n_attempts=20,
+            chemostatted_values=self._chemostatted or None,
         )
         if plot:
             from .plot import plot_bifurcation

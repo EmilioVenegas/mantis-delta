@@ -8,14 +8,24 @@ import sympy
 from .parsing import Complex, Reaction
 
 
-def build_species_list(reactions: list[Reaction]) -> list[str]:
-    """Collect all species from all reactions, return sorted list."""
+def build_species_list(reactions: list[Reaction], chemostatted: set[str] | None = None) -> list[str]:
+    """Collect all species from all reactions, return sorted list.
+
+    Parameters
+    ----------
+    reactions : list[Reaction]
+    chemostatted : set[str], optional
+        Species names to exclude from the returned list (they are held fixed).
+    """
+    chem = chemostatted or set()
     species: set[str] = set()
     for rxn in reactions:
         for name, _ in rxn.reactants:
-            species.add(name)
+            if name not in chem:
+                species.add(name)
         for name, _ in rxn.products:
-            species.add(name)
+            if name not in chem:
+                species.add(name)
     return sorted(species)
 
 
@@ -26,15 +36,40 @@ def build_stoichiometry_matrix(
     """
     Return N of shape (n_species, n_reactions).
     N[i,j] = sum(product coeff) - sum(reactant coeff) for species i in reaction j.
+
+    Species that appear in reactions but are not in `species` (e.g. chemostatted
+    species excluded from the dynamic list) are silently ignored — they have no
+    stoichiometry row.
     """
     sp_idx = {s: i for i, s in enumerate(species)}
     N = np.zeros((len(species), len(reactions)), dtype=float)
     for j, rxn in enumerate(reactions):
         for name, coeff in rxn.reactants:
-            N[sp_idx[name], j] -= coeff
+            if name in sp_idx:
+                N[sp_idx[name], j] -= coeff
         for name, coeff in rxn.products:
-            N[sp_idx[name], j] += coeff
+            if name in sp_idx:
+                N[sp_idx[name], j] += coeff
     return N
+
+
+def fold_chemostatted_into_rates(
+    reactions: list[Reaction],
+    rate_values: dict[str, float],
+    chemostatted_values: dict[str, float],
+) -> dict[str, float]:
+    """
+    Pre-multiply fixed chemostatted concentrations into rate constants.
+    For A chemostatted at c_A: k_eff = k * c_A^stoich so the ODE sees only dynamic species.
+    """
+    eff: dict[str, float] = {}
+    for rxn in reactions:
+        base = rate_values.get(rxn.rate_key, 0.0)
+        for name, coeff in rxn.reactants:
+            if name in chemostatted_values:
+                base = base * (chemostatted_values[name] ** coeff)
+        eff[rxn.rate_key] = base
+    return eff
 
 
 def matrix_rank(N: np.ndarray) -> int:

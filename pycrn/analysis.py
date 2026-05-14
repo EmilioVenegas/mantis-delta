@@ -34,18 +34,24 @@ def build_ode_function(
     reactions: list[Reaction],
     species: list[str],
     rate_values: dict[str, float],
+    chemostatted: set[str] | None = None,
 ) -> Any:
     """
     Return a callable f(t, y) → dydt using pure numpy.
     Pre-computes N matrix and ordered rate array for speed.
+
+    Chemostatted species are excluded from reactants_info (their contribution
+    has already been folded into rate_values via fold_chemostatted_into_rates).
     """
+    chem = chemostatted or set()
     sp_idx = {s: i for i, s in enumerate(species)}
     N = build_stoichiometry_matrix(reactions, species)
     rates_arr = np.array([rate_values.get(r.rate_key, 0.0) for r in reactions])
 
     # Pre-compute reactant info: list of (species_index, coeff) per reaction
+    # Skip chemostatted species — their concentrations are already in rates_arr
     reactants_info = [
-        [(sp_idx[name], coeff) for name, coeff in rxn.reactants]
+        [(sp_idx[name], coeff) for name, coeff in rxn.reactants if name not in chem]
         for rxn in reactions
     ]
 
@@ -91,17 +97,19 @@ def _build_augmented_system(
     rate_values: dict[str, float],
     cl_vectors: list[np.ndarray],
     cl_totals: list[float],
+    chemostatted: set[str] | None = None,
 ) -> Any:
     """
     Build f(y) = 0 system combining independent ODE equations + conservation constraints.
     Selects rank(N) linearly independent rows of N using QR pivoting.
     """
     from scipy.linalg import qr
+    chem = chemostatted or set()
     sp_idx = {s: i for i, s in enumerate(species)}
     N = build_stoichiometry_matrix(reactions, species)
     rates_arr = np.array([rate_values.get(r.rate_key, 0.0) for r in reactions])
     reactants_info = [
-        [(sp_idx[name], coeff) for name, coeff in rxn.reactants]
+        [(sp_idx[name], coeff) for name, coeff in rxn.reactants if name not in chem]
         for rxn in reactions
     ]
 
@@ -157,15 +165,17 @@ def _full_jacobian_fn(
     reactions: list[Reaction],
     species: list[str],
     rate_values: dict[str, float],
+    chemostatted: set[str] | None = None,
 ):
     """Return a function y → J(y) for the full ODE Jacobian dF/dy."""
     from .stoichiometry import build_stoichiometry_matrix
+    chem = chemostatted or set()
     sp_idx = {s: i for i, s in enumerate(species)}
     N_full = build_stoichiometry_matrix(reactions, species)
     n_sp = len(species)
     rates_arr = np.array([rate_values.get(r.rate_key, 0.0) for r in reactions])
     reactants_info = [
-        [(sp_idx[name], coeff) for name, coeff in rxn.reactants]
+        [(sp_idx[name], coeff) for name, coeff in rxn.reactants if name not in chem]
         for rxn in reactions
     ]
 
@@ -229,12 +239,21 @@ def find_steady_states(
     n_attempts: int = 50,
     tol: float = 1e-8,
     seed: int | None = None,
+    chemostatted_values: dict[str, float] | None = None,
 ) -> list[SteadyState]:
     """
     Steady-state finder using two strategies:
     1. Primary: integrate ODE to t=1e6 s (conserves all conservation laws exactly).
     2. Secondary: multi-start least_squares for additional steady states.
+
+    Chemostatted species are folded into effective rate constants so the ODE
+    system only tracks dynamic species.
     """
+    from .stoichiometry import fold_chemostatted_into_rates
+    chem_vals = chemostatted_values or {}
+    chem_keys = set(chem_vals.keys())
+    eff_rates = fold_chemostatted_into_rates(reactions, rate_values, chem_vals) if chem_vals else rate_values
+
     n_sp = len(species)
     rng = np.random.default_rng(seed)
 
@@ -242,9 +261,9 @@ def find_steady_states(
     y_ref = np.array([initial_conditions.get(s, 0.0) for s in species])
     cl_totals = [float(v @ y_ref) for v in cl_vecs]
 
-    f_ode = build_ode_function(reactions, species, rate_values)
-    full_jac = _full_jacobian_fn(reactions, species, rate_values)
-    system_fn = _build_augmented_system(reactions, species, rate_values, cl_vecs, cl_totals)
+    f_ode = build_ode_function(reactions, species, eff_rates, chem_keys)
+    full_jac = _full_jacobian_fn(reactions, species, eff_rates, chem_keys)
+    system_fn = _build_augmented_system(reactions, species, eff_rates, cl_vecs, cl_totals, chem_keys)
 
     collected: list[SteadyState] = []
 
@@ -341,6 +360,7 @@ def scan_bifurcation(
     n_points: int,
     initial_conditions: dict[str, float],
     n_attempts: int = 20,
+    chemostatted_values: dict[str, float] | None = None,
 ) -> BifurcationResult:
     """Vary one rate constant over a log-spaced range and collect steady states."""
     from .parsing import normalize_rate_key
@@ -359,6 +379,7 @@ def scan_bifurcation(
         ss_list = find_steady_states(
             reactions, species, rates, initial_conditions,
             n_attempts=n_attempts, seed=42,
+            chemostatted_values=chemostatted_values,
         )
         all_ss.append(ss_list)
 

@@ -22,16 +22,26 @@ class CRNTResult:
     summary_lines: list[str] = field(default_factory=list)
 
 
-def build_complex_graph(reactions: list[Reaction]) -> nx.DiGraph:
+def build_complex_graph(reactions: list[Reaction], chemostatted: set[str] | None = None) -> nx.DiGraph:
     """
     Directed graph where nodes are Complex objects and edges are reactions.
     Each edge carries the reaction index as attribute 'rxn_idx'.
+
+    Parameters
+    ----------
+    chemostatted : set[str], optional
+        Species held at fixed concentrations; they are removed from each complex
+        node before building the graph (reduced CRNT graph).
     """
+    from .parsing import reduce_complex
+    chem = chemostatted or set()
     G = nx.DiGraph()
     for idx, rxn in enumerate(reactions):
-        G.add_node(rxn.reactants)
-        G.add_node(rxn.products)
-        G.add_edge(rxn.reactants, rxn.products, rxn_idx=idx)
+        r = reduce_complex(rxn.reactants, chem)
+        p = reduce_complex(rxn.products, chem)
+        G.add_node(r)
+        G.add_node(p)
+        G.add_edge(r, p, rxn_idx=idx)
     return G
 
 
@@ -60,11 +70,15 @@ def _per_lc_deficiency(
     lc: set[Complex],
     reactions: list[Reaction],
     species: list[str],
+    chemostatted: set[str] | None = None,
 ) -> int:
     """Deficiency of one linkage class."""
+    from .parsing import reduce_complex
+    chem = chemostatted or set()
     lc_rxn_indices = [
         i for i, r in enumerate(reactions)
-        if r.reactants in lc and r.products in lc
+        if reduce_complex(r.reactants, chem) in lc
+        and reduce_complex(r.products, chem) in lc
     ]
     n_l = len(lc)
     if not lc_rxn_indices:
@@ -88,6 +102,7 @@ def check_deficiency_one_theorem(
     reactions: list[Reaction],
     species: list[str],
     is_weakly_reversible: bool,
+    chemostatted: set[str] | None = None,
 ) -> tuple[bool, str]:
     """
     Structural check for Deficiency One Theorem applicability:
@@ -98,7 +113,7 @@ def check_deficiency_one_theorem(
     """
     if deficiency != 1:
         return False, "Deficiency One Theorem: NOT applicable (δ ≠ 1)"
-    lc_defs = [_per_lc_deficiency(lc, reactions, species) for lc in lcs]
+    lc_defs = [_per_lc_deficiency(lc, reactions, species, chemostatted) for lc in lcs]
     if any(d > 1 for d in lc_defs):
         return False, (
             "Deficiency One Theorem: NOT applicable "
@@ -120,8 +135,10 @@ def crnt_analysis(
     reactions: list[Reaction],
     N: np.ndarray,
     species: list[str],
+    chemostatted: set[str] | None = None,
 ) -> CRNTResult:
-    G = build_complex_graph(reactions)
+    chem = chemostatted or set()
+    G = build_complex_graph(reactions, chem)
     complexes = list(G.nodes())
     lcs = get_linkage_classes(G)
     n = len(complexes)
@@ -131,7 +148,7 @@ def crnt_analysis(
     wr = check_weak_reversibility(G)
 
     dzt_applies = (delta == 0 and wr)
-    d1t_applies, d1t_msg = check_deficiency_one_theorem(delta, lcs, reactions, species, wr)
+    d1t_applies, d1t_msg = check_deficiency_one_theorem(delta, lcs, reactions, species, wr, chem)
 
     lines = [
         f"CRNetwork: {len(species)} species, {n} complexes, {l} linkage classes",

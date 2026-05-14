@@ -94,3 +94,8 @@ def normalize_rate_key(key: str) -> str:
     r = parse_complex(left)
     p = parse_complex(right)
     return canonical_rate_key(r, p)
+
+
+def reduce_complex(c: Complex, chemostatted: set[str]) -> Complex:
+    """Remove chemostatted species from a complex for the reduced CRNT graph."""
+    return frozenset((name, coeff) for name, coeff in c if name not in chemostatted)

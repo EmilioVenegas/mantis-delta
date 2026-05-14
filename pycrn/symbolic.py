@@ -35,11 +35,19 @@ def mass_action_flux(
     rxn: Reaction,
     species_syms: dict[str, sympy.Symbol],
     rate_sym: sympy.Symbol,
+    chemostatted_values: dict[str, float] | None = None,
 ) -> sympy.Expr:
-    """Return rate_sym * Π(species^coeff) for each reactant."""
+    """Return rate_sym * Π(species^coeff) for each reactant.
+
+    Chemostatted species are substituted as Float constants rather than symbols.
+    """
+    chem = chemostatted_values or {}
     expr = rate_sym
     for name, coeff in rxn.reactants:
-        expr = expr * species_syms[name] ** coeff
+        if name in chem:
+            expr = expr * sympy.Float(chem[name]) ** coeff
+        else:
+            expr = expr * species_syms[name] ** coeff
     return expr
 
 
@@ -49,14 +57,17 @@ def build_odes(
     species_syms: dict[str, sympy.Symbol],
     rate_syms: dict[str, sympy.Symbol],
     key_to_sym: dict[str, sympy.Symbol],
+    chemostatted_values: dict[str, float] | None = None,
 ) -> dict[str, sympy.Expr]:
     """
     Return dict: species_name → d[species]/dt as SymPy expression.
     Uses stoichiometry matrix: d[Xi]/dt = Σⱼ N[i,j] * flux_j(y).
+
+    Chemostatted species appear as Float constants in the flux expressions.
     """
     N = build_stoichiometry_matrix(reactions, species)
     fluxes = [
-        mass_action_flux(rxn, species_syms, key_to_sym[rxn.rate_key])
+        mass_action_flux(rxn, species_syms, key_to_sym[rxn.rate_key], chemostatted_values)
         for rxn in reactions
     ]
     odes: dict[str, sympy.Expr] = {}
