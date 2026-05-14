@@ -75,7 +75,6 @@ external-data: |
 
 # ── Quarto rendering options ─────────────────────────────────────────────
 bibliography: references.bib
-csl: https://www.zotero.org/styles/nature
 link-citations: true
 number-sections: true
 fontsize: 11pt
@@ -83,7 +82,7 @@ geometry:
   - margin=1in
 linestretch: 1.25
 papersize: letter
-mainfont: "Times New Roman"
+mainfont: "Liberation Serif"
 linkcolor: NavyBlue
 citecolor: NavyBlue
 urlcolor: NavyBlue
