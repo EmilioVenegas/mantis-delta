@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mantis"
+name = "mantis-delta"
 version = "0.1.0"
 description = "Mass-Action Network Theory, Inference, and Stability — structural and numerical analysis of chemical reaction networks"
 readme = "README.md"
@@ -33,9 +33,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/emiliovenegas/mantis"
-Repository = "https://github.com/emiliovenegas/mantis"
-Issues = "https://github.com/emiliovenegas/mantis/issues"
+Homepage = "https://github.com/emiliovenegas/mantis-delta"
+Repository = "https://github.com/emiliovenegas/mantis-delta"
+Issues = "https://github.com/emiliovenegas/mantis-delta/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,7 +1,7 @@
-site_name: mantis
-site_url: https://emiliovenegas.github.io/mantis
-repo_url: https://github.com/emiliovenegas/mantis
-repo_name: emiliovenegas/mantis
+site_name: mantis-delta
+site_url: https://emiliovenegas.github.io/mantis-delta
+repo_url: https://github.com/emiliovenegas/mantis-delta
+repo_name: emiliovenegas/mantis-delta
 
 theme:
   name: material

@@ -1,6 +1,6 @@
-# `mantis` preprint manuscript
+# `mantis-delta` preprint manuscript
 
-This directory contains the source files for the `mantis` research article
+This directory contains the source files for the `mantis-delta` research article
 prepared for submission to **bioRxiv** as a preprint.
 
 ## Files
