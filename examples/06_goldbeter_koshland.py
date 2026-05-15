@@ -143,8 +143,8 @@ qss_vals = np.array([gk_qss(u, km_norm) for u in ratios])
 
 # QSS uses effective velocities V1 = kcat1*E1t, V2 = kcat2*E2t
 # Since E1t = E2t, ratio u = kcat1/kcat2
-print("Comparison: mantis full mass-action vs. GK QSS approximation")
-print(f"  {'kcat1/kcat2':>12}  {'mantis Wp/Wt':>12}  {'QSS Wp/Wt':>10}  {'error':>8}")
+print("Comparison: mantis-delta-delta full mass-action vs. GK QSS approximation")
+print(f"  {'kcat1/kcat2':>12}  {'mantis-delta Wp/Wt':>12}  {'QSS Wp/Wt':>10}  {'error':>8}")
 for u, num, qss in zip(ratios[::5], phospho_ss[::5], qss_vals[::5]):
     err = abs(num/W_TOTAL - qss)
     print(f"  {u:12.2f}  {num/W_TOTAL:12.4f}  {qss:10.4f}  {err:8.4f}")
@@ -155,7 +155,7 @@ fig, axes = plt.subplots(1, 2, figsize=(11, 4))
 # Left: dose-response curve
 ax1 = axes[0]
 ax1.semilogx(ratios, phospho_ss / W_TOTAL, "o-", color="#2196F3",
-             linewidth=2, markersize=5, label="mantis (full mass-action)")
+             linewidth=2, markersize=5, label="mantis-delta (full mass-action)")
 ax1.semilogx(ratios, qss_vals, "--", color="#F44336",
              linewidth=1.5, label="GK QSS approximation")
 ax1.axvline(1.0, color="grey", linestyle=":", linewidth=1)

@@ -1,6 +1,6 @@
 ---
-title: "mantis: Mass-Action Network Theory, Inference, and Stability — A Python library for structural and numerical analysis of chemical reaction networks"
-shorttitle: "mantis: Mass-Action Network Theory, Inference, and Stability"
+title: "mantis-delta: Mass-Action Network Theory, Inference, and Stability — A Python library for structural and numerical analysis of chemical reaction networks"
+shorttitle: "mantis-delta: Mass-Action Network Theory, Inference, and Stability"
 author:
   - name: Emilio A. Venegas
     orcid: 0000-0002-7689-9185
@@ -17,12 +17,12 @@ abstract: |
   values of the rate constants. Despite the maturity of the theory, modern
   open-source implementations that combine CRNT structural analysis with
   symbolic ordinary differential equation (ODE) construction and robust
-  numerical steady-state finding remain scarce. We present `mantis`, a pure
+  numerical steady-state finding remain scarce. We present `mantis-delta`, a pure
   Python library that ingests human-readable reaction strings, builds the
   complex reaction graph, computes the deficiency $\delta = n - \ell - s$ and
   weak reversibility, and decides applicability of the Deficiency Zero
   Theorem (DZT) and Deficiency One Theorem (D1T). For systems satisfying
-  these structural conditions, `mantis` certifies, without any simulation
+  these structural conditions, `mantis-delta` certifies, without any simulation
   whatsoever, existence, uniqueness and (for DZT) asymptotic stability of
   the positive steady state in every stoichiometric compatibility class.
   When the structural theorems do not apply, the library provides symbolic
@@ -39,8 +39,8 @@ abstract: |
   $10^{-6}\,\mathrm{M\,s^{-1}}$, and the Goldbeter--Koshland dose-response
   curve agrees with the closed-form quasi-steady-state approximation to
   within $1\%$ over a $400\times$ kinase/phosphatase activity scan.
-  `mantis` is open-source (MIT license) and available at
-  <https://github.com/emiliovenegas/mantis>.
+  `mantis-delta` is open-source (MIT license) and available at
+  <https://github.com/emiliovenegas/mantis-delta>.
 keywords:
   - chemical reaction network theory
   - mass-action kinetics
@@ -69,7 +69,7 @@ distribution-reuse: |
   the MIT License.
 external-data: |
   Source code, examples, test suite, and reproducibility scripts are openly
-  available at <https://github.com/emiliovenegas/mantis>.
+  available at <https://github.com/emiliovenegas/mantis-delta>.
 
 # ── Quarto rendering options ─────────────────────────────────────────────
 bibliography: references.bib
@@ -147,7 +147,7 @@ execute:
   Article category:        New Results
   Subject area:            Systems Biology
   Title:                   See above
-  External data URL:       https://github.com/emiliovenegas/mantis
+  External data URL:       https://github.com/emiliovenegas/mantis-delta
   Abstract:                Included above
   Author approvals:        Stated above
   Competing interests:     None declared
@@ -201,10 +201,10 @@ numerical solver capable of finding both stable and *unstable* fixed
 points, the latter being indispensable for the location of Hopf
 bifurcation centres in chemostatted, open systems [@prigogine1968symmetry].
 
-In this paper we introduce `mantis`, a small Python library that fills this
+In this paper we introduce `mantis-delta`, a small Python library that fills this
 gap. Built on top of the SciPy scientific stack [@virtanen2020scipy;
 @harris2020array], SymPy [@meurer2017sympy], and NetworkX
-[@hagberg2008exploring], `mantis` implements:
+[@hagberg2008exploring], `mantis-delta` implements:
 
 1. parsing of human-readable reaction strings, canonical-form normalisation
    of rate-constant keys, and construction of the complex reaction graph;
@@ -225,7 +225,7 @@ gap. Built on top of the SciPy scientific stack [@virtanen2020scipy;
 7. log-spaced bifurcation scans of any rate constant and a NetworkX-based
    reaction-graph visualiser.
 
-`mantis` targets two distinct user communities: (a) systems biologists and
+`mantis-delta` targets two distinct user communities: (a) systems biologists and
 synthetic-biology engineers who want to certify, before any wet-lab work,
 that an enzymatic cycle [@ferrell2014ultrasensitivity], a DNA strand-displacement
 cascade [@yin2008catalytic; @li2011nonenzymatic], or a metabolic motif
@@ -236,13 +236,13 @@ implementation against which to develop further structural algorithms.
 
 The remainder of this article is organised as follows. Section
 [-@sec-methods] presents the mathematical objects and algorithms
-implemented in `mantis`. Section [-@sec-results] applies the library to
+implemented in `mantis-delta`. Section [-@sec-results] applies the library to
 six benchmark networks of increasing complexity: a reversible
 isomerisation (DZT applies), Michaelis--Menten (δ = 0 but not weakly
 reversible), the closed and chemostatted Brusselator (Hopf-driven limit
 cycle), the catalytic hairpin assembly (CHA) miR-21 biosensor (δ = 1, D1T
 applies), and the Goldbeter--Koshland zero-order ultrasensitivity switch
-[@goldbeter1981amplified]. Section [-@sec-discussion] places `mantis` in
+[@goldbeter1981amplified]. Section [-@sec-discussion] places `mantis-delta` in
 the context of existing CRN software and outlines limitations and future
 directions.
 
@@ -295,7 +295,7 @@ $$
 $$ {#eq-jac}
 with the convention that the right-hand side equals
 $k_j\,y_j(S_i)\,\prod_{k \neq i} c_k^{y_j(S_k)}$ when $c_i = 0$. In
-`mantis`, equations (@eq-odes)--(@eq-jac) are constructed symbolically as
+`mantis-delta`, equations (@eq-odes)--(@eq-jac) are constructed symbolically as
 SymPy expressions via `network.CRNetwork.odes()` and
 `network.CRNetwork.jacobian()`; rate constants may be kept symbolic
 ($k_1, k_2, \ldots$) or substituted by their numeric values.
@@ -308,7 +308,7 @@ $$
 \boldsymbol{\ell}^{\!\top}\mathbf{N} \;=\; \mathbf{0},
 $$ {#eq-cl}
 so that $\boldsymbol{\ell}^{\!\top}\mathbf{c}(t)$ is invariant along every
-trajectory. `mantis` computes a non-negative integer basis of
+trajectory. `mantis-delta` computes a non-negative integer basis of
 $\operatorname{LeftNull}(\mathbf{N})$ via exact rational arithmetic with
 SymPy, then post-processes the basis (sign normalisation, integer
 scaling, and elementary reduction) to recover physical moiety totals. The
@@ -332,7 +332,7 @@ if every weakly connected component of $G$ is also strongly connected.
 
 ## Feinberg's structural theorems
 
-The two principal results implemented in `mantis` are:
+The two principal results implemented in `mantis-delta` are:
 
 ::: {.callout-note appearance="simple" icon=false}
 **Theorem 1 (Deficiency Zero Theorem; Horn--Jackson 1972, Feinberg 1972).** *Let
@@ -355,7 +355,7 @@ equilibrium in every positive stoichiometric compatibility class*
 [@feinberg1995existence; @feinberg2019foundations].
 :::
 
-`mantis` decides the structural hypotheses of both theorems by direct graph
+`mantis-delta` decides the structural hypotheses of both theorems by direct graph
 construction (NetworkX), exact rank computation (NumPy
 [@harris2020array]), and per-LC deficiency calculation via QR-pivoted
 row selection of $\mathbf{N}$ [@virtanen2020scipy]. The decision is
@@ -367,7 +367,7 @@ programmatically by the `CRNTResult` dataclass.
 A *chemostatted* species is one whose concentration is held constant by an
 external reservoir, mimicking continuous replenishment in a flow reactor
 or a buffer with effectively infinite capacity. Following the open-network
-formalism of @polettini2014irreversible, `mantis` removes chemostatted
+formalism of @polettini2014irreversible, `mantis-delta` removes chemostatted
 species from the dynamic state vector and folds their (fixed)
 concentrations into *effective* rate constants:
 $$
@@ -377,7 +377,7 @@ $$ {#eq-fold}
 so that the reduced ODE system contains only the dynamic species.
 Crucially, on open systems the conservation-law left null space is in
 general empty and forward integration cannot locate Hopf-unstable fixed
-points; `mantis` therefore switches to a *scale-aware multi-start*
+points; `mantis-delta` therefore switches to a *scale-aware multi-start*
 bound-constrained least-squares strategy that retains the ability to find
 unstable equilibria.
 
@@ -395,7 +395,7 @@ $$
 \mathbf{c}^\ast \;\ge\; \mathbf{0},
 $$ {#eq-ss}
 where $\mathbf{N}_{\mathrm{ind}}$ collects $s$ linearly independent rows
-of $\mathbf{N}$ selected by QR pivoting. `mantis` first attempts forward
+of $\mathbf{N}$ selected by QR pivoting. `mantis-delta` first attempts forward
 integration of (@eq-odes) with SciPy's stiff implicit Radau IIA solver
 [@hairer1996solving; @virtanen2020scipy] from the user-supplied initial
 condition, then runs bound-constrained algebraic least-squares
@@ -419,7 +419,7 @@ candidate and its eigenvalues classified as in @tbl-stability.
 
 # Results {#sec-results}
 
-We illustrate `mantis`'s end-to-end workflow on six benchmark networks of
+We illustrate `mantis-delta`'s end-to-end workflow on six benchmark networks of
 increasing complexity. All examples are bundled with the source
 distribution (`examples/01–06`).
 
@@ -435,7 +435,7 @@ $$
 A^\ast \;=\; \frac{k_r}{k_f + k_r}\,T, \qquad
 B^\ast \;=\; \frac{k_f}{k_f + k_r}\,T,
 $$ {#eq-aoffb}
-and it is asymptotically stable. `mantis` recovers
+and it is asymptotically stable. `mantis-delta` recovers
 (@eq-aoffb) numerically to machine precision: for
 $k_f = 1.0$, $k_r = 0.5$, $A_0 = 2$, $B_0 = 0$ the solver returns
 $A^\ast = 0.6\overline{6}$ and $B^\ast = 1.\overline{3}$ with residual
@@ -455,7 +455,7 @@ has three complexes, one linkage class, and
 $\operatorname{rank}(\mathbf{N}) = 2$, hence $\delta = 0$. However the
 network is *not* weakly reversible because the catalytic step
 $ES \to E + P$ has no reverse edge in the complex graph. The Deficiency
-Zero Theorem therefore *does not* apply in its stability form. `mantis`
+Zero Theorem therefore *does not* apply in its stability form. `mantis-delta`
 correctly reports this and returns the two conservation laws
 $E + ES = E_{\mathrm{tot}}$ and $S + ES + P = S_{\mathrm{tot}}$ as
 non-negative integer left null-space vectors. For the standard parameters
@@ -470,7 +470,7 @@ $$
 \qquad
 K_M \;=\; \frac{k_r + k_{\mathrm{cat}}}{k_f}
 $$ {#eq-qss}
-tracks the full mass-action concentration $[ES](t)$ obtained by `mantis`
+tracks the full mass-action concentration $[ES](t)$ obtained by `mantis-delta`
 to better than $0.25\%$ throughout the catalytic phase
 (Fig.\ [-@fig-mm]). At the true mathematical steady state the irreversible
 catalytic step drives all substrate to product, so $[ES]^\ast = 0$;
@@ -496,7 +496,7 @@ B + X \xrightarrow{k_2} Y + D, \qquad
 X \xrightarrow{k_4} E
 $$ {#eq-bruss-reactions}
 is the canonical example of a chemical oscillator. With *all* six species
-treated as dynamic, `mantis` reports $\delta = 0$ but the network is not
+treated as dynamic, `mantis-delta` reports $\delta = 0$ but the network is not
 weakly reversible (no autocatalytic complex appears as a product of any
 other reaction), so neither Feinberg theorem certifies global asymptotic
 stability. Forward integration of the full closed system converges to a
@@ -527,7 +527,7 @@ $$
 $$ {#eq-bruss-jac}
 so that a supercritical Hopf bifurcation occurs at the threshold
 $B = 1 + A^{2}$ [@prigogine1968symmetry]. For $A = 1$, $B = 3$ the
-condition $B > 1 + A^{2}$ is satisfied and `mantis` locates the
+condition $B > 1 + A^{2}$ is satisfied and `mantis-delta` locates the
 *unstable* fixed point $(X^\ast, Y^\ast) = (1, 3)$ algebraically (forward
 integration would orbit the limit cycle indefinitely); the Jacobian
 eigenvalues are $\lambda_{\pm} = \tfrac{1}{2} \pm \tfrac{\sqrt{3}}{2}\,i$
@@ -539,10 +539,10 @@ stable spiral.
 oscillatory): (a) time series of $X$ and $Y$; (b) phase portrait showing
 the transient (grey) relaxing onto the limit cycle (green) that orbits the
 algebraic fixed point $(X^\ast, Y^\ast) = (1, 3)$, classified as an
-unstable focus by `mantis`. Bottom row ($B = 1.5$, damped):
+unstable focus by `mantis-delta`. Bottom row ($B = 1.5$, damped):
 (c) time series; (d) phase portrait spiralling into the stable equilibrium
 $(1, 1.5)$. The black markers indicate the equilibria returned by
-`mantis`'s algebraic solver. Generated by
+`mantis-delta`'s algebraic solver. Generated by
 `examples/05_brusselator_chemostatted.py`.](../examples/brusselator_combined.png){#fig-bruss width=95%}
 
 ## CHA miR-21 biosensor: parameter-free uniqueness via D1T {#sec-cha}
@@ -565,7 +565,7 @@ H_{1} + H_{2} &\;\rightleftharpoons\; H_{1}\!:\!H_{2}.
 $$ {#eq-cha}
 Forward and reverse rate constants were obtained from NUPACK
 thermodynamic calculations [@zadeh2011nupack] at 37 °C in
-$137\,\mathrm{mM}$ NaCl, $10\,\mathrm{mM}$ MgCl$_2$. `mantis`'s structural
+$137\,\mathrm{mM}$ NaCl, $10\,\mathrm{mM}$ MgCl$_2$. `mantis-delta`'s structural
 analysis returns $m = 7$ species, $n = 8$ complexes, $\ell = 4$ linkage
 classes, $\operatorname{rank}(\mathbf{N}) = 3$, hence
 $$
@@ -574,7 +574,7 @@ $$ {#eq-cha-def}
 The network is weakly reversible and each linkage class has
 per-LC deficiency $\delta_q \in \{0, 1\}$ with exactly one $\delta_q = 1$,
 so the Deficiency One Theorem applies and certifies *at most one* positive
-equilibrium per stoichiometric compatibility class. `mantis` further
+equilibrium per stoichiometric compatibility class. `mantis-delta` further
 returns the four moiety totals (miR21$_{\mathrm{tot}}$, $H_{1,\mathrm{tot}}$,
 $H_{2,\mathrm{tot}}$, $\mathrm{CP}_{\mathrm{tot}}$) as a non-negative
 integer basis of $\operatorname{LeftNull}(\mathbf{N})$.
@@ -658,7 +658,7 @@ $k_{\mathrm{off}} = 0.1\,\mathrm{s^{-1}}$,
 $k_{\mathrm{cat}} = 1\,\mathrm{s^{-1}}$, giving
 $W^{\mathrm{tot}}/K_M \approx 9000$. Scanning
 $u = k_{\mathrm{cat}}^{1}/k_{\mathrm{cat}}^{2}$ over more than two
-decades, `mantis` finds exactly one steady state at every point
+decades, `mantis-delta` finds exactly one steady state at every point
 (Fig.\ [-@fig-gk]), confirming the D1T prediction. The numerical
 fractional activation agrees with (@eq-gk-qss) to better than $1\%$
 across the full scan, and the effective Hill coefficient at half-maximum
@@ -666,7 +666,7 @@ exceeds $2 \times 10^{3}$, illustrating the digital character of the
 switch.
 
 ![Goldbeter--Koshland zero-order ultrasensitivity switch. Left:
-fractional activation $y = [W_p]^\ast/W^{\mathrm{tot}}$ from `mantis`'s
+fractional activation $y = [W_p]^\ast/W^{\mathrm{tot}}$ from `mantis-delta`'s
 full mass-action solution (markers) overlaid on the QSS prediction
 (@eq-gk-qss) (dashed). Right: the same data plotted alone, with the
 effective Hill coefficient annotated. The Deficiency One Theorem
@@ -675,7 +675,7 @@ guarantees the single-valued nature of the curve. Generated by
 
 ## Reaction graph visualisation {#sec-graph}
 
-For pedagogical exposition and debugging, `mantis` exposes a NetworkX-based
+For pedagogical exposition and debugging, `mantis-delta` exposes a NetworkX-based
 graph layout via `CRNetwork.draw()`. Figure [-@fig-graph] shows the
 complex reaction graph for the CHA network of §[-@sec-cha]; nodes are
 complexes, directed edges are reactions, and the four weakly connected
@@ -690,7 +690,7 @@ $\delta = 8-4-3=1$.](../examples/cha_reaction_graph.png){#fig-graph width=80%}
 
 # Discussion {#sec-discussion}
 
-We have presented `mantis`, a lightweight Python implementation of
+We have presented `mantis-delta`, a lightweight Python implementation of
 Feinberg-style chemical reaction network theory tightly integrated with
 SymPy [@meurer2017sympy] for symbolic ODE construction and SciPy
 [@virtanen2020scipy] for numerical equilibration. The combination of
@@ -710,7 +710,7 @@ approximation to within $1\%$ over the entire $400\times$ activity scan.
 
 Compared with the foundational Chemical Reaction Network Toolbox
 [@ji2011crnreal] and the constraint-programming approach of
-@soliman2012crnpy, `mantis` offers (i) an idiomatic Python API tailored to
+@soliman2012crnpy, `mantis-delta` offers (i) an idiomatic Python API tailored to
 the modern scientific stack [@harris2020array; @virtanen2020scipy], (ii)
 first-class support for chemostatted (open) networks in the spirit of
 @polettini2014irreversible, including the algebraic location of
@@ -730,7 +730,7 @@ implemented. Model-reduction techniques [@rao2014identifying] and
 robustness analysis [@shinar2010structural] are natural next steps, as is
 integration with SBML import/export.
 
-In conclusion, `mantis` provides an accessible, well-tested, and
+In conclusion, `mantis-delta` provides an accessible, well-tested, and
 mathematically rigorous entry point into chemical reaction network theory
 for the broader Python scientific community. By coupling Feinberg's
 structural theorems to symbolic and numerical tools, it lowers the
@@ -744,7 +744,7 @@ enzymatic signal transduction [@goldbeter1981amplified;
 
 All source code, examples, the 93-test pytest suite, and scripts to
 regenerate every figure in this paper are openly available under the MIT
-License at <https://github.com/emiliovenegas/mantis>. The version used to
+License at <https://github.com/emiliovenegas/mantis-delta>. The version used to
 prepare this manuscript is tagged `v0.1.0`.
 
 # Author contributions {.unnumbered}

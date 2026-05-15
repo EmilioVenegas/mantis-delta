@@ -1,6 +1,6 @@
 # API Reference
 
-This page contains the auto-generated documentation for the `mantis` source code.
+This page contains the auto-generated documentation for the `mantis-delta` source code.
 
 ::: mantis.CRNetwork
     options:

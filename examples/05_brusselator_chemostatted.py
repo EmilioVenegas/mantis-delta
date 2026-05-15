@@ -7,7 +7,7 @@ replenished — i.e. they are chemostatted at fixed concentrations. In that sett
 the 2D (X, Y) subsystem can undergo a Hopf bifurcation and sustain limit-cycle
 oscillations.
 
-This example demonstrates how to use mantis's ODE machinery with chemostatted
+This example demonstrates how to use mantis-delta's ODE machinery with chemostatted
 species by wrapping the library's ODE function: species A and B are pinned to their
 initial values at every time step, effectively treating them as kinetic parameters.
 
