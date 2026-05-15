@@ -1,13 +1,13 @@
-# `pycrn` preprint manuscript
+# `mantis` preprint manuscript
 
-This directory contains the source files for the `pycrn` research article
+This directory contains the source files for the `mantis` research article
 prepared for submission to **bioRxiv** as a preprint.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `pycrn_preprint.qmd` | Quarto source for the manuscript. Renders to PDF (XeLaTeX) or HTML. |
+| `mantis_preprint.qmd` | Quarto source for the manuscript. Renders to PDF (XeLaTeX) or HTML. |
 | `references.bib`     | BibTeX bibliography (Horn–Jackson, Feinberg, Goldbeter–Koshland, NUPACK, SciPy/NumPy/SymPy, etc.). |
 
 ## Rendering
@@ -15,8 +15,8 @@ prepared for submission to **bioRxiv** as a preprint.
 ```bash
 # Install Quarto: https://quarto.org/docs/get-started/
 cd paper
-quarto render pycrn_preprint.qmd --to pdf     # produces pycrn_preprint.pdf
-quarto render pycrn_preprint.qmd --to html    # produces pycrn_preprint.html
+quarto render mantis_preprint.qmd --to pdf     # produces mantis_preprint.pdf
+quarto render mantis_preprint.qmd --to html    # produces mantis_preprint.html
 ```
 
 The PDF target uses XeLaTeX with the KOMA-Script `scrartcl` class, Times New

@@ -20,7 +20,7 @@ Demonstrates:
 - Symbolic ODE generation for a 3rd-order network
 - Steady-state finding for a nonlinear system
 """
-from pycrn import CRNetwork
+from mantis import CRNetwork
 
 rn = CRNetwork.from_string(
     [

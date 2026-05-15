@@ -7,7 +7,7 @@ Demonstrates:
 - Steady-state finding with analytical verification
 - Symbolic ODE display
 """
-from pycrn import CRNetwork
+from mantis import CRNetwork
 
 rn = CRNetwork.from_string(
     ["A <-> B"],
