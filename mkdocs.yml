@@ -1,7 +1,7 @@
-site_name: pycrn
-site_url: https://emiliovenegas.github.io/pycrn
-repo_url: https://github.com/emiliovenegas/pycrn
-repo_name: emiliovenegas/pycrn
+site_name: mantis
+site_url: https://emiliovenegas.github.io/mantis
+repo_url: https://github.com/emiliovenegas/mantis
+repo_name: emiliovenegas/mantis
 
 theme:
   name: material

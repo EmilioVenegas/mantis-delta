@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.integrate import solve_ivp
 
-from pycrn import CRNetwork
+from mantis import CRNetwork
 
 _here = pathlib.Path(__file__).parent
 

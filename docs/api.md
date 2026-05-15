@@ -1,11 +1,11 @@
 # API Reference
 
-This page contains the auto-generated documentation for the `pycrn` source code.
+This page contains the auto-generated documentation for the `mantis` source code.
 
-::: pycrn.CRNetwork
+::: mantis.CRNetwork
     options:
       show_root_heading: true
 
-::: pycrn.analysis
+::: mantis.analysis
     options:
       show_root_heading: true

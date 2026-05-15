@@ -1,6 +1,6 @@
 """Tests for chemostatted (fixed-concentration) species support."""
 import pytest
-from pycrn import CRNetwork
+from mantis import CRNetwork
 
 
 BRUSSELATOR_REACTIONS = [

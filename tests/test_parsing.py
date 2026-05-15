@@ -1,5 +1,5 @@
 import pytest
-from pycrn.parsing import (
+from mantis.parsing import (
     parse_complex, parse_reaction_string, parse_reactions,
     canonical_rate_key, normalize_rate_key, Reaction
 )

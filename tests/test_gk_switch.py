@@ -18,7 +18,7 @@ This is consistent with the original GK result: the switch produces sigmoidal
 import numpy as np
 import pytest
 import sympy
-from pycrn import CRNetwork
+from mantis import CRNetwork
 
 
 GK_STRINGS = [
@@ -67,7 +67,7 @@ def test_n_linkage_classes(rn):
     assert rn.n_linkage_classes == 2
 
 def test_stoichiometry_rank(rn):
-    from pycrn.stoichiometry import matrix_rank
+    from mantis.stoichiometry import matrix_rank
     assert matrix_rank(rn.stoichiometry_matrix) == 3
 
 def test_deficiency(rn):

@@ -14,8 +14,8 @@ matplotlib.rcParams.update({"font.family": "STIXGeneral", "mathtext.fontset": "s
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-from pycrn import CRNetwork
-from pycrn.analysis import build_ode_function
+from mantis import CRNetwork
+from mantis.analysis import build_ode_function
 
 rn = CRNetwork.from_string(
     ["E + S <-> ES", "ES -> E + P"],
