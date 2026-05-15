@@ -36,8 +36,8 @@ Homepage = "https://github.com/emiliovenegas/mantis-delta"
 Repository = "https://github.com/emiliovenegas/mantis-delta"
 Issues = "https://github.com/emiliovenegas/mantis-delta/issues"
 
-[tool.setuptools.packages.find]
-include = ["mantis*"]
+[tool.setuptools]
+packages = ["mantis"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
