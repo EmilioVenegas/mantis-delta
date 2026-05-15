@@ -52,6 +52,12 @@ pip install -e .
 
 **Requirements:** Python ≥ 3.10, NumPy ≥ 1.24, SciPy ≥ 1.10, SymPy ≥ 1.12, Matplotlib ≥ 3.6, NetworkX ≥ 3.0.
 
+> **Note on import name:** the PyPI distribution is called `mantis-delta`, but the Python package is imported as `mantis`:
+> ```python
+> import mantis
+> from mantis import CRNetwork
+> ```
+
 ---
 
 ## Core concepts

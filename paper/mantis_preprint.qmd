@@ -1,6 +1,6 @@
 ---
-title: "mantis-delta: Mass-Action Network Theory, Inference, and Stability — A Python library for structural and numerical analysis of chemical reaction networks"
-shorttitle: "mantis-delta: Mass-Action Network Theory, Inference, and Stability"
+title: "Mantis-Delta: Mass-Action Network Theory and Steady-State Characterization for Chemical Reaction Networks"
+shorttitle: "Mantis-Delta: Mass-Action Network Theory for Chemical Reaction Networks"
 author:
   - name: Emilio A. Venegas
     orcid: 0000-0002-7689-9185
@@ -103,7 +103,8 @@ format:
         \usepackage{microtype}
         \usepackage{siunitx}
         \usepackage{fancyvrb}
-        \fvset{fontsize=\small}
+        \fvset{fontsize=\footnotesize}
+        \renewcommand{\texttt}[1]{{\footnotesize\ttfamily #1}}
         \usepackage{graphicx}
         \usepackage[font=small,labelfont=bf]{caption}
         \usepackage{abstract}
