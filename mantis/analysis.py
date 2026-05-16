@@ -264,6 +264,7 @@ def simulate_ode(
         n_pts = 200
         if t0 <= 0 and tf > 0:
             t_eval = np.logspace(np.log10(max(tf * 1e-6, 1e-6)), np.log10(tf), n_pts - 1)
+            t_eval[-1] = tf
             t_eval = np.concatenate([[t0], t_eval])
         else:
             t_eval = np.linspace(t0, tf, n_pts)
@@ -281,8 +282,12 @@ def simulate_ode(
         )
         times = sol.t
         conc = {sp: np.maximum(sol.y[i], 0.0) for i, sp in enumerate(species)}
+        if not sol.success:
+            print("solve_ivp failed:", getattr(sol, 'message', 'No message'))
         return SimulationResult(times=times, concentrations=conc, success=sol.success)
-    except Exception:
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         times = np.array([t0, tf])
         conc = {sp: np.full(2, y0[i]) for i, sp in enumerate(species)}
         return SimulationResult(times=times, concentrations=conc, success=False)
