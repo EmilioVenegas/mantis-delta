@@ -14,9 +14,9 @@ _SUBSCRIPT_DIGITS = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉"
 def _prettify_species(name: str) -> str:
     """Turn ASCII species names into typographically nicer forms.
 
-    Trailing digits become Unicode subscripts (`H1` → `H₁`); underscores that
+    Trailing digits become LaTeX subscripts (`H1` → `H$_{1}$`); underscores that
     join species into a complex name become the centred dot (`H1H2_CP` →
-    `H₁H₂·CP`).
+    `H$_{1}$H$_{2}$$\\cdot$CP`).
     """
     parts = name.split("_")
     pretty_parts = []
@@ -29,14 +29,14 @@ def _prettify_species(name: str) -> str:
                 in_digits = True
             else:
                 if in_digits:
-                    out.append("".join(buf).translate(_SUBSCRIPT_DIGITS))
+                    out.append(f"$_{{{''.join(buf)}}}$")
                     buf = []
                     in_digits = False
                 out.append(ch)
         if in_digits:
-            out.append("".join(buf).translate(_SUBSCRIPT_DIGITS))
+            out.append(f"$_{{{''.join(buf)}}}$")
         pretty_parts.append("".join(out))
-    return "·".join(pretty_parts)
+    return "$\\cdot$".join(pretty_parts)
 
 
 def _complex_label(c) -> str:

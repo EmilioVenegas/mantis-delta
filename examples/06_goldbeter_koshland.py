@@ -160,7 +160,7 @@ ax1.semilogx(ratios, qss_vals, "--", color="#F44336",
              linewidth=1.5, label="GK QSS approximation")
 ax1.axvline(1.0, color="grey", linestyle=":", linewidth=1)
 ax1.axhline(0.5, color="grey", linestyle=":", linewidth=1)
-ax1.set_xlabel("kcat₁ / kcat₂  (kinase / phosphatase activity)", fontsize=10)
+ax1.set_xlabel("kcat$_1$ / kcat$_2$  (kinase / phosphatase activity)", fontsize=10)
 ax1.set_ylabel("Fractional activation  Wp* / W_total", fontsize=10)
 ax1.set_title(
     "Goldbeter-Koshland switch\n"
@@ -184,7 +184,7 @@ ax2 = axes[1]
 ax2.semilogx(ratios, phospho_ss / W_TOTAL, "o-", color="#2196F3",
              linewidth=2, markersize=5)
 ax2.fill_between(ratios, 0, phospho_ss / W_TOTAL, alpha=0.15, color="#2196F3")
-ax2.set_xlabel("kcat₁ / kcat₂", fontsize=10)
+ax2.set_xlabel("kcat$_1$ / kcat$_2$", fontsize=10)
 ax2.set_ylabel("Fractional activation", fontsize=10)
 ax2.set_title(
     f"Single-valued dose-response\n"

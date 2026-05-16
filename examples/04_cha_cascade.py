@@ -49,14 +49,14 @@ CHA_STRINGS = [
 # k_f from Zhang & Winfree 2009 (≥7 nt → saturated 1e6); k_r = k_f·exp(ΔΔG/RT)
 # ΔΔG: R1=-8.84, R2=-4.45, R3=-10.93 kcal/mol; leakage Ea=18.29 kcal/mol (H1 stem)
 CHA_RATES = {
-    "miR21 + H1 -> miR21_H1":          1.0e6,      # k_on  (M⁻¹s⁻¹), 7-nt D1 toehold
-    "miR21_H1 -> miR21 + H1":          5.8925e-1,  # k_off (s⁻¹),    ΔΔG=-8.84 kcal/mol
-    "miR21_H1 + H2 -> H1H2 + miR21":   1.0e6,      # k_on  (M⁻¹s⁻¹), 15-nt D2
-    "H1H2 + miR21 -> miR21_H1 + H2":   7.3116e2,   # k_rev (M⁻¹s⁻¹), ΔΔG=-4.45 kcal/mol
-    "H1H2 + CP -> H1H2_CP":            1.0e6,      # k_on  (M⁻¹s⁻¹), 8-nt tail T
-    "H1H2_CP -> H1H2 + CP":            1.9836e-2,  # k_off (s⁻¹),    ΔΔG=-10.93 kcal/mol
-    "H1 + H2 -> H1H2":                 1.2904e-7,  # k_leak (M⁻¹s⁻¹), Ea=18.29 kcal/mol
-    "H1H2 -> H1 + H2":                 5.5596e-17, # essentially irreversible
+    "miR21 + H1 -> miR21_H1":          3.692e+06,  # k_on  (M⁻¹s⁻¹), 7-nt D1 toehold
+    "miR21_H1 -> miR21 + H1":          5.664e+00,  # k_off (s⁻¹),    ΔΔG=-8.25 kcal/mol
+    "miR21_H1 + H2 -> H1H2 + miR21":   1.846e+07,  # k_on  (M⁻¹s⁻¹), 15-nt D2
+    "H1H2 + miR21 -> miR21_H1 + H2":   2.807e+00,  # k_rev (M⁻¹s⁻¹), ΔΔG=-9.67 kcal/mol
+    "H1H2 + CP -> H1H2_CP":            9.230e+06,  # k_on  (M⁻¹s⁻¹), 8-nt tail T
+    "H1H2_CP -> H1H2 + CP":            4.940e+00,  # k_off (s⁻¹),    ΔΔG=-8.90 kcal/mol
+    "H1 + H2 -> H1H2":                 2.525e-07,  # k_leak (M⁻¹s⁻¹), Ea=18.29 kcal/mol
+    "H1H2 -> H1 + H2":                 5.891e-20,  # essentially irreversible
 }
 
 CHA_IC = {
@@ -144,7 +144,7 @@ for mir21_conc in mir21_values:
 
 fig, ax = plt.subplots(figsize=(7, 4))
 ax.loglog(mir21_values * 1e9, np.maximum(signal_values, 1e-15) * 1e9, "o-", color="#2196F3")
-ax.set_xlabel("[miR21]₀ (nM)")
+ax.set_xlabel("[miR21]$_0$ (nM)")
 ax.set_ylabel("[H1H2_CP]* (nM)")
 ax.set_title("CHA Signal vs. miR21 Concentration (t = 1 h)")
 ax.grid(True, which="both", alpha=0.3)
@@ -225,28 +225,28 @@ print("  Simulations complete.")
 t_min = T_EVAL / 60
 
 SPECIES_STYLE = {
-    "H₁ (free)":          ("#4C72B0", "-",   1.6),
-    "H₂ (free)":          ("#DD8452", "-",   1.6),
+    "H$_1$ (free)":          ("#4C72B0", "-",   1.6),
+    "H$_2$ (free)":          ("#DD8452", "-",   1.6),
     "miR-21 (free)":      ("#55A868", ":",   1.4),
-    "miR-21·H₁":          ("#C44E52", "-.",  1.4),
-    "H₁·H₂ dimer":        ("#8172B3", "-",   2.2),
-    "H₁·H₂·CP (signal)":  ("#1a1a1a", "--",  2.5),
+    "miR-21·H$_1$":          ("#C44E52", "-.",  1.4),
+    "H$_1$·H$_2$ dimer":        ("#8172B3", "-",   2.2),
+    "H$_1$·H$_2$·CP (signal)":  ("#1a1a1a", "--",  2.5),
 }
 
 fig_sp, axes_sp = plt.subplots(2, 2, figsize=(14, 9), sharex=True)
-fig_sp.suptitle("CHA Cascade — Full Kinetics  (37 °C, [H₁]=[H₂]=[CP]=100 nM)",
+fig_sp.suptitle("CHA Cascade — Full Kinetics  (37 °C, [H$_1$]=[H$_2$]=[CP]=100 nM)",
                 fontsize=13, y=1.01)
 
 for ax_sp, (c_mir21, label, _, sol) in zip(axes_sp.flat, sim_results):
     H1, H2, CP, miR21, miR21_H1, H1H2, H1H2_CP = sol.y
     nM = 1e9
     traces = [
-        ("H₁ (free)",         H1),
-        ("H₂ (free)",         H2),
+        ("H$_1$ (free)",         H1),
+        ("H$_2$ (free)",         H2),
         ("miR-21 (free)",     miR21),
-        ("miR-21·H₁",         miR21_H1),
-        ("H₁·H₂ dimer",       H1H2),
-        ("H₁·H₂·CP (signal)", H1H2_CP),
+        ("miR-21·H$_1$",         miR21_H1),
+        ("H$_1$·H$_2$ dimer",       H1H2),
+        ("H$_1$·H$_2$·CP (signal)", H1H2_CP),
     ]
     for name, conc in traces:
         color, ls, lw = SPECIES_STYLE[name]
@@ -306,7 +306,7 @@ ax_dose.grid(True, which="both", alpha=0.25)
 ax_dose.invert_yaxis()
 
 fig_an.suptitle("CHA Kinetics — Analysis", fontsize=13)
-plt.tight_layout()
+# plt.tight_layout()  # Removed to avoid GridSpec warning
 out_an = _here / "cha_kinetics_analysis.png"
 fig_an.savefig(out_an, dpi=150, bbox_inches="tight")
 print(f"  Analysis panels saved to {out_an}")
