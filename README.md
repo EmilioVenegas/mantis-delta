@@ -1,4 +1,4 @@
-# mantis-delta — Mass-Action Network Theory, Inference, and Stability
+# mantis-delta — Mass-Action Network Theory and Steady-State Characterization for Chemical Reaction Networks
 
 [![Tests](https://img.shields.io/badge/tests-93%20passed-brightgreen)](#running-the-tests)
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](#installation)
@@ -675,6 +675,10 @@ The simplest possible network: one reversible reaction. Demonstrates δ = 0, DZT
 
 E + S ⇌ ES → E + P. Demonstrates a network with δ = 0 that is *not* weakly reversible (DZT does not apply). Shows enzyme conservation E + ES = const and validates against the quasi-steady-state approximation.
 
+![Michaelis-Menten enzyme kinetics](examples/michaelis_menten.png)
+
+*Figure 1. (a) Full mass-action time course (E₀ = 1 μM, S₀ = 100 μM): S and P on the left axis, E and ES on the right. (b) Full mass-action [ES](t) (solid) vs. the quasi-steady-state approximation E₀·[S](t)/(Kₘ+[S](t)) (dashed); the two curves agree to within 0.25% after the initial ~5 ms transient.*
+
 ### `03_brusselator.py` — Nonlinear open system
 
 A four-reaction network with a cubic nonlinearity. With all species treated as dynamic (not chemostatted), δ = 0. Shows symbolic ODE generation for a network with higher-order kinetics.
@@ -690,17 +694,33 @@ The primary validation case. Demonstrates the full workflow:
 6. Bifurcation scan across three orders of magnitude of [miR-21]
 7. Reaction graph visualization
 
+![CHA cascade kinetics at multiple miR-21 concentrations](examples/cha_kinetics_species.png)
+
+*Figure 2. Mass-action kinetics of the CHA cascade at four miR-21 trigger concentrations (10 nM, 1 nM, 100 pM, and no-trigger leakage-only control). The reporter complex H1:H2:CP (dashed black) is the electrochemical output; H1 and H2 are the fuel hairpins held at 100 nM. The leakage-only panel shows that spontaneous H1:H2 dimerisation is negligible over a 120 min window.*
+
 ![CHA signal vs miR-21 concentration](examples/cha_bifurcation.png)
 
-*Figure 1. Steady-state signal [H1H2\_CP]* as a function of initial [miR-21] (0.1–100 nM). The single-valued, monotone curve is consistent with the D1T uniqueness guarantee.*
+*Figure 3. Steady-state reporter signal [H1:H2:CP]* as a function of initial [miR-21] (0.1–100 nM). The single-valued, monotone curve is consistent with the D1T uniqueness guarantee.*
+
+![CHA complex reaction graph](examples/cha_reaction_graph.png)
+
+*Figure 4. Complex reaction graph for the CHA miR-21 biosensor. Nodes are complexes (e.g. miR21 + H1), directed edges are reactions. Four weakly connected components (ℓ = 4) and eight complexes (n = 8) on a stoichiometric subspace of dimension s = 3 give δ = 8 − 4 − 3 = 1.*
 
 ### `05_brusselator_chemostatted.py` — Brusselator with chemostatted species
 
 Shows that when A and B are held fixed (continuously replenished), the reduced 2D (X, Y) subsystem undergoes a Hopf bifurcation and sustains limit-cycle oscillations for B > 1 + A². Demonstrates the chemostatted ODE wrapper pattern: pin selected species by zeroing their derivatives. Includes both the oscillatory case (B=3) and the stable-spiral contrast case (B=1.5).
 
+![Brusselator dynamics with chemostatted A and B](examples/brusselator_combined.png)
+
+*Figure 5. Top row (B = 3, oscillatory): (a) time series of X and Y; (b) phase portrait with the transient (grey) relaxing onto the limit cycle (green) orbiting the algebraic fixed point (X\*, Y\*) = (1, 3), classified as an unstable focus. Bottom row (B = 1.5, damped): (c) time series; (d) phase portrait spiralling into the stable equilibrium (1, 1.5). Black markers show the equilibria returned by the algebraic solver.*
+
 ### `06_goldbeter_koshland.py` — Goldbeter-Koshland switch (literature validation)
 
 Validates mantis-delta against the published GK result (PNAS 1981). The full mass-action mechanism (kinase + phosphatase arms) has δ=1, satisfies D1T → at most one SS per stoichiometry class → bistability is structurally impossible. Numerically confirms: (1) exactly one SS found across a 400× scan of kinase/phosphatase ratio, (2) fractional activation matches the GK QSS formula to within 1%, (3) effective Hill coefficient ≈ 2250 at Wt/Km = 9000.
+
+![Goldbeter-Koshland zero-order ultrasensitivity switch](examples/gk_switch_dose_response.png)
+
+*Figure 6. Left: fractional activation y = [Wp]\*/W\_tot from the full mass-action solution (markers) overlaid on the quasi-steady-state prediction (dashed). Right: the same data with the effective Hill coefficient annotated. The Deficiency One Theorem guarantees the single-valued nature of the curve.*
 
 ---
 
