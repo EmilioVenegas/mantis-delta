@@ -355,6 +355,97 @@ class CRNetwork:
             atol=atol,
         )
 
+    def stochastic_simulate(
+        self,
+        initial_conditions: dict[str, float],
+        t_span: tuple[float, float],
+        volume_L: float,
+        *,
+        initial_as: str = "concentration",
+        max_events: int = 1_000_000,
+        seed: int | None = None,
+    ):
+        """
+        Single-trajectory Gillespie SSA realization.
+
+        Use when molecule counts are low (∼ ≤ 10³) and the deterministic ODE
+        gives the wrong answer — e.g., a CHA cascade at single-cell
+        concentrations or stochastic switching in a bistable circuit.
+
+        Parameters
+        ----------
+        initial_conditions : species → initial count or concentration.
+        t_span             : (t0, tf) in seconds.
+        volume_L           : reaction volume in liters (e.g. 1e-4 = 100 µL).
+        initial_as         : 'concentration' (default) or 'count'.
+        max_events         : safety cap on reaction firings.
+        seed               : RNG seed for reproducibility.
+
+        Returns
+        -------
+        StochasticResult with ``.times``, ``.counts``, ``.concentrations``,
+        ``.at(t)``, ``.final()``.
+        """
+        from .analysis import gillespie_simulate
+        return gillespie_simulate(
+            self._reactions,
+            self.species,
+            self._rates,
+            initial_conditions,
+            t_span=t_span,
+            volume_L=volume_L,
+            initial_as=initial_as,
+            max_events=max_events,
+            seed=seed,
+            chemostatted_values=self._chemostatted or None,
+        )
+
+    def tau_leap_simulate(
+        self,
+        initial_conditions: dict[str, float],
+        t_span: tuple[float, float],
+        volume_L: float,
+        *,
+        initial_as: str = "concentration",
+        tau: float | None = None,
+        epsilon: float = 0.03,
+        n_record: int = 200,
+        seed: int | None = None,
+    ):
+        """
+        τ-leap stochastic simulation (approximate Gillespie).
+
+        Same interface as :meth:`stochastic_simulate` but fires reactions in
+        Poisson-distributed bursts over each leap rather than one at a time.
+        Roughly N× faster than direct SSA when populations are large (N is
+        the mean number of firings per leap), at the cost of asymptotic
+        accuracy as populations shrink.
+
+        Parameters
+        ----------
+        tau : optional fixed leap size (s); if None, adaptive τ per Cao 2006.
+        epsilon : adaptive-τ tolerance (max fractional propensity change per
+                  leap).  Smaller = more accurate, slower.
+        n_record : number of evenly-spaced time points to record.
+
+        See :func:`mantis.analysis.tau_leap_simulate` for full details.
+        """
+        from .analysis import tau_leap_simulate
+        return tau_leap_simulate(
+            self._reactions,
+            self.species,
+            self._rates,
+            initial_conditions,
+            t_span=t_span,
+            volume_L=volume_L,
+            initial_as=initial_as,
+            tau=tau,
+            epsilon=epsilon,
+            n_record=n_record,
+            seed=seed,
+            chemostatted_values=self._chemostatted or None,
+        )
+
     def draw(self, ax=None, layout: str = "spring") -> matplotlib.axes.Axes:
         from .plot import draw_reaction_graph
         return draw_reaction_graph(self._crnt_graph, ax=ax, layout=layout)

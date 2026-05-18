@@ -29,6 +29,7 @@ The library supports three classes of chemical networks:
    - [Stability analysis](#6-stability-analysis)
    - [Bifurcation scanning](#7-bifurcation-scanning)
    - [Visualization](#8-visualization)
+   - [Stochastic simulation](#9-stochastic-simulation)
 5. [API reference](#api-reference)
 6. [Examples](#examples)
 7. [Troubleshooting](#troubleshooting)
@@ -480,6 +481,49 @@ ax.set_ylabel("[H1H2_CP] (M)")
 plt.tight_layout()
 plt.savefig("bifurcation.png", dpi=150)
 ```
+
+---
+
+### 9. Stochastic simulation
+
+When molecule counts are low (single-cell volumes, ≤10³ molecules) the deterministic ODE no longer matches reality. Two stochastic simulators are wired into `CRNetwork`:
+
+#### `stochastic_simulate` — exact Gillespie SSA
+
+Direct-method SSA: one reaction per step, one log-uniform random number drawn for the time-to-next-event. Exact for any population size, but slow when reactions fire frequently.
+
+```python
+res = rn.stochastic_simulate(
+    initial_conditions={"A": 100, "B": 100, "C": 0},  # molecule counts
+    t_span=(0.0, 1.0),
+    volume_L=1e-15,               # 1 fL — single-cell-ish
+    initial_as="count",
+    seed=0,
+)
+print(res.final())                # final concentrations
+print(res.at(0.5))                # interpolated concentrations at t = 0.5 s
+```
+
+`initial_as="concentration"` (the default) accepts molar concentrations and converts via Avogadro × volume.
+
+#### `tau_leap_simulate` — τ-leap approximation
+
+Fires all reactions in Poisson-distributed bursts over each leap τ instead of one at a time. Roughly *N×* faster than direct SSA where *N* is the mean firings per leap. Recommended when populations are large enough that propensities don't change dramatically between firings.
+
+```python
+res = rn.tau_leap_simulate(
+    initial_conditions={"A": 1e-6, "B": 1e-6, "C": 0.0},  # 1 µM
+    t_span=(0.0, 1.0),
+    volume_L=1e-12,
+    epsilon=0.03,                 # adaptive τ tolerance (Cao 2006)
+    n_record=200,                 # evenly-spaced trajectory snapshots
+    seed=0,
+)
+```
+
+Pass `tau=0.001` to override the adaptive selection and use a fixed leap size. The simulator falls back to a single exact-SSA step whenever a tentative leap would drive any species count below zero (simple leap-rejection — not the binomial Tian/Burrage refinement, but adequate for kinetic-design contexts).
+
+Both functions return a `StochasticResult` with `.times`, `.counts`, `.concentrations`, `.at(t)`, and `.final()`.
 
 ---
 

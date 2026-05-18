@@ -1,4 +1,5 @@
 """Numerical ODE simulation, steady-state finding, stability analysis, and bifurcation scanning."""
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -45,6 +46,409 @@ class SimulationResult:
     def final(self) -> dict[str, float]:
         """Return concentrations at the last time point."""
         return {sp: float(arr[-1]) for sp, arr in self.concentrations.items()}
+
+
+# Avogadro's number — converts between molarity and molecule count.
+AVOGADRO = 6.02214076e23
+
+
+@dataclass
+class StochasticResult:
+    """Trajectory from a single Gillespie SSA realization.
+
+    Attributes
+    ----------
+    times          : 1-D ndarray of reaction times (length n_events + 1)
+    counts         : dict species → 1-D ndarray of integer molecule counts
+    concentrations : dict species → 1-D ndarray of concentrations (M)
+                     (counts / (volume * Avogadro))
+    n_events       : number of reaction firings recorded
+    success        : True if integration finished before exhausting events
+    volume_L       : reaction volume in liters
+    """
+    times: np.ndarray
+    counts: dict[str, np.ndarray]
+    concentrations: dict[str, np.ndarray]
+    n_events: int
+    success: bool
+    volume_L: float
+
+    def at(self, t: float) -> dict[str, float]:
+        """Step-function lookup of concentrations at time t."""
+        idx = int(np.searchsorted(self.times, t, side="right")) - 1
+        idx = max(0, min(idx, len(self.times) - 1))
+        return {sp: float(arr[idx]) for sp, arr in self.concentrations.items()}
+
+    def final(self) -> dict[str, float]:
+        return {sp: float(arr[-1]) for sp, arr in self.concentrations.items()}
+
+
+def gillespie_simulate(
+    reactions: list[Reaction],
+    species: list[str],
+    rate_values: dict[str, float],
+    initial_conditions: dict[str, float],
+    t_span: tuple[float, float],
+    volume_L: float,
+    *,
+    initial_as: str = "concentration",
+    max_events: int = 1_000_000,
+    seed: int | None = None,
+    chemostatted_values: dict[str, float] | None = None,
+) -> StochasticResult:
+    """
+    Single-trajectory Gillespie direct-method SSA.
+
+    Parameters
+    ----------
+    reactions, species, rate_values
+        Same shape as :func:`simulate_ode` — deterministic mass-action rates.
+    initial_conditions
+        Either molecule counts (set ``initial_as='count'``) or molar
+        concentrations (default).
+    t_span : (t0, tf)
+        Simulation interval.
+    volume_L : float
+        Reaction volume in liters.  Required because stochastic propensities
+        depend on absolute molecule counts.  For 100 µL physiological volume,
+        pass ``1e-4``.
+    initial_as : 'concentration' or 'count'
+    max_events : safety cap on reaction firings.
+    seed : optional RNG seed for reproducibility.
+    chemostatted_values : species kept at constant concentration; folded into
+        the propensities of reactions that consume them.
+
+    Returns
+    -------
+    StochasticResult
+        Full trajectory of times, counts and concentrations.
+    """
+    from .stoichiometry import fold_chemostatted_into_rates
+
+    rng = np.random.default_rng(seed)
+    chem_vals = chemostatted_values or {}
+    eff_rates = (
+        fold_chemostatted_into_rates(reactions, rate_values, chem_vals)
+        if chem_vals else rate_values
+    )
+    chem = set(chem_vals.keys())
+
+    sp_idx = {s: i for i, s in enumerate(species)}
+    n_sp = len(species)
+    NA_V = AVOGADRO * volume_L
+
+    # Initial counts
+    n = np.zeros(n_sp, dtype=np.int64)
+    for s, val in initial_conditions.items():
+        if s not in sp_idx:
+            continue
+        if initial_as == "count":
+            n[sp_idx[s]] = int(round(val))
+        else:
+            n[sp_idx[s]] = int(round(val * NA_V))
+
+    # Per-reaction reactant info and stoichiometric change vector
+    rxn_info = []  # list of (k_deterministic, [(idx, coeff), ...], change_vec)
+    for rxn in reactions:
+        k_det = float(eff_rates.get(rxn.rate_key, 0.0))
+        reactants = [(sp_idx[name], coeff) for name, coeff in rxn.reactants
+                     if name not in chem]
+        change = np.zeros(n_sp, dtype=np.int64)
+        for name, coeff in rxn.reactants:
+            if name in sp_idx and name not in chem:
+                change[sp_idx[name]] -= coeff
+        for name, coeff in rxn.products:
+            if name in sp_idx and name not in chem:
+                change[sp_idx[name]] += coeff
+        rxn_info.append((k_det, reactants, change))
+
+    def propensity(rxn_idx: int, state: np.ndarray) -> float:
+        """Stochastic propensity for reaction rxn_idx given current counts."""
+        k_det, reactants, _ = rxn_info[rxn_idx]
+        if k_det <= 0.0:
+            return 0.0
+        order = sum(c for _, c in reactants)
+        # h(x) = product of combinatorial choose terms
+        h = 1.0
+        for idx, coeff in reactants:
+            ni = int(state[idx])
+            if ni < coeff:
+                return 0.0
+            for j in range(coeff):
+                h *= (ni - j)
+            if coeff > 1:
+                h /= math.factorial(coeff)
+        # c = k_det / (N_A V)^(order - 1)
+        if order > 1:
+            c = k_det / (NA_V ** (order - 1))
+        else:
+            c = k_det
+        return c * h
+
+    times = [float(t_span[0])]
+    history = [n.copy()]
+    t = float(t_span[0])
+    tf = float(t_span[1])
+    n_events = 0
+    success = True
+
+    # Pre-allocate propensity array
+    a = np.zeros(len(reactions))
+
+    while t < tf:
+        if n_events >= max_events:
+            success = False
+            break
+        for j in range(len(reactions)):
+            a[j] = propensity(j, n)
+        a0 = float(a.sum())
+        if a0 <= 0.0:
+            # No more reactions can fire; system frozen.
+            break
+        # Time to next event
+        r1, r2 = rng.random(), rng.random()
+        tau = -math.log(r1) / a0
+        t_new = t + tau
+        if t_new > tf:
+            break
+        # Pick reaction
+        threshold = r2 * a0
+        cum = 0.0
+        chosen = len(reactions) - 1
+        for j in range(len(reactions)):
+            cum += a[j]
+            if cum >= threshold:
+                chosen = j
+                break
+        # Apply
+        n = n + rxn_info[chosen][2]
+        t = t_new
+        times.append(t)
+        history.append(n.copy())
+        n_events += 1
+
+    # Pad to tf
+    if times[-1] < tf:
+        times.append(tf)
+        history.append(n.copy())
+
+    times_arr = np.asarray(times)
+    history_arr = np.stack(history, axis=0)   # shape (T, n_sp)
+    counts_dict = {sp: history_arr[:, i] for i, sp in enumerate(species)}
+    conc_dict = {sp: history_arr[:, i] / NA_V for i, sp in enumerate(species)}
+
+    return StochasticResult(
+        times=times_arr,
+        counts=counts_dict,
+        concentrations=conc_dict,
+        n_events=n_events,
+        success=success,
+        volume_L=volume_L,
+    )
+
+
+def tau_leap_simulate(
+    reactions: list[Reaction],
+    species: list[str],
+    rate_values: dict[str, float],
+    initial_conditions: dict[str, float],
+    t_span: tuple[float, float],
+    volume_L: float,
+    *,
+    initial_as: str = "concentration",
+    tau: float | None = None,
+    epsilon: float = 0.03,
+    n_record: int = 200,
+    seed: int | None = None,
+    chemostatted_values: dict[str, float] | None = None,
+) -> StochasticResult:
+    """
+    Approximate Gillespie via τ-leap (Gillespie 2001; Cao, Gillespie, Petzold 2006).
+
+    Instead of one reaction per step, fire all reactions in parallel over a
+    timestep τ, sampling each firing count from Poisson(a_j · τ).  Much faster
+    than direct SSA when populations are large and propensities change slowly,
+    at the cost of accuracy: τ-leap is exact only in the limit of frequent
+    reactions per leap (large molecule counts).
+
+    Parameters
+    ----------
+    reactions, species, rate_values, initial_conditions, t_span, volume_L,
+    initial_as, seed, chemostatted_values
+        Same as :func:`gillespie_simulate`.
+    tau : optional fixed leap size (seconds).  If None, an adaptive τ is
+        chosen each step bounded by ``epsilon`` (Cao 2006 algorithm).
+    epsilon : adaptive-τ tolerance.  Controls the maximum allowed fractional
+        change in any propensity per leap; smaller = more accurate but slower.
+        Ignored when ``tau`` is given.
+    n_record : approximate number of evenly-spaced time points to record in
+        the returned trajectory (the simulator's internal step is independent
+        of this — recording is via linear interpolation of step boundaries).
+
+    Returns
+    -------
+    StochasticResult
+        Same shape as :func:`gillespie_simulate`.
+
+    Notes
+    -----
+    To preserve non-negativity in stiff systems, this implementation falls
+    back to a single direct-SSA step when the chosen τ would drive any
+    species count below zero (a simple "leap rejection" — not the binomial
+    Tian/Burrage refinement, but adequate for most kinetic-design contexts).
+    """
+    from .stoichiometry import fold_chemostatted_into_rates
+
+    rng = np.random.default_rng(seed)
+    chem_vals = chemostatted_values or {}
+    eff_rates = (
+        fold_chemostatted_into_rates(reactions, rate_values, chem_vals)
+        if chem_vals else rate_values
+    )
+    chem = set(chem_vals.keys())
+
+    sp_idx = {s: i for i, s in enumerate(species)}
+    n_sp = len(species)
+    NA_V = AVOGADRO * volume_L
+
+    n = np.zeros(n_sp, dtype=np.int64)
+    for s, val in initial_conditions.items():
+        if s not in sp_idx:
+            continue
+        if initial_as == "count":
+            n[sp_idx[s]] = int(round(val))
+        else:
+            n[sp_idx[s]] = int(round(val * NA_V))
+
+    rxn_info = []
+    change_matrix = np.zeros((len(reactions), n_sp), dtype=np.int64)
+    for ridx, rxn in enumerate(reactions):
+        k_det = float(eff_rates.get(rxn.rate_key, 0.0))
+        reactants = [(sp_idx[name], coeff) for name, coeff in rxn.reactants
+                     if name not in chem]
+        for name, coeff in rxn.reactants:
+            if name in sp_idx and name not in chem:
+                change_matrix[ridx, sp_idx[name]] -= coeff
+        for name, coeff in rxn.products:
+            if name in sp_idx and name not in chem:
+                change_matrix[ridx, sp_idx[name]] += coeff
+        rxn_info.append((k_det, reactants))
+
+    def propensity(rxn_idx: int, state: np.ndarray) -> float:
+        k_det, reactants = rxn_info[rxn_idx]
+        if k_det <= 0.0:
+            return 0.0
+        order = sum(c for _, c in reactants)
+        h = 1.0
+        for idx, coeff in reactants:
+            ni = int(state[idx])
+            if ni < coeff:
+                return 0.0
+            for j in range(coeff):
+                h *= (ni - j)
+            if coeff > 1:
+                h /= math.factorial(coeff)
+        if order > 1:
+            c = k_det / (NA_V ** (order - 1))
+        else:
+            c = k_det
+        return c * h
+
+    def all_propensities(state: np.ndarray) -> np.ndarray:
+        out = np.empty(len(reactions))
+        for j in range(len(reactions)):
+            out[j] = propensity(j, state)
+        return out
+
+    def adaptive_tau(state: np.ndarray, a: np.ndarray) -> float:
+        """Cao et al. 2006: bound the relative change of each propensity."""
+        a0 = float(a.sum())
+        if a0 <= 0:
+            return float("inf")
+        # Per-species drift and variance under one leap
+        # mu_i = Σ_j ν_ji · a_j ;  σ²_i = Σ_j ν_ji² · a_j
+        nu = change_matrix  # (n_rxn, n_sp)
+        mu = nu.T @ a       # (n_sp,)
+        sigma2 = (nu.T ** 2) @ a
+        # Highest-order reaction touching each species (Cao approximation g_i)
+        # Simplification: g_i = 2 for all species (works for ≤ 2nd-order rxns)
+        g = np.full(n_sp, 2.0)
+        x = np.maximum(state.astype(float), 1.0)
+        bound1 = np.where(np.abs(mu) > 0, np.maximum(epsilon * x / g, 1.0) / np.abs(mu), np.inf)
+        bound2 = np.where(sigma2 > 0, (np.maximum(epsilon * x / g, 1.0) ** 2) / sigma2, np.inf)
+        return float(min(bound1.min(), bound2.min()))
+
+    t = float(t_span[0])
+    tf = float(t_span[1])
+    record_times = np.linspace(t, tf, max(2, n_record))
+    record_states = np.zeros((len(record_times), n_sp), dtype=np.int64)
+    record_states[0] = n
+    next_record = 1
+    success = True
+
+    while t < tf and next_record < len(record_times):
+        a = all_propensities(n)
+        a0 = float(a.sum())
+        if a0 <= 0.0:
+            break
+
+        if tau is not None:
+            dt = float(tau)
+        else:
+            dt = adaptive_tau(n, a)
+
+        # Cap the step to the next recording time so we don't skip past it.
+        dt = min(dt, tf - t, record_times[next_record] - t)
+        if dt <= 0:
+            dt = tf - t
+
+        # Sample firing counts
+        firings = rng.poisson(a * dt)
+
+        # Provisional new state — reject if it goes negative
+        delta = firings @ change_matrix
+        n_new = n + delta
+        if (n_new < 0).any():
+            # Leap rejection: fall back to one exact SSA step
+            r1, r2 = rng.random(), rng.random()
+            ssa_dt = -math.log(max(r1, 1e-300)) / a0
+            if t + ssa_dt > tf:
+                t = tf
+                break
+            cum = 0.0
+            threshold = r2 * a0
+            chosen = len(reactions) - 1
+            for j in range(len(reactions)):
+                cum += a[j]
+                if cum >= threshold:
+                    chosen = j
+                    break
+            n = n + change_matrix[chosen]
+            t = t + ssa_dt
+        else:
+            n = n_new
+            t = t + dt
+
+        # Snapshot at any recording times we've crossed
+        while next_record < len(record_times) and record_times[next_record] <= t:
+            record_states[next_record] = n
+            next_record += 1
+
+    # Fill any remaining slots with the last state
+    for i in range(next_record, len(record_times)):
+        record_states[i] = n
+
+    counts_dict = {sp: record_states[:, i] for i, sp in enumerate(species)}
+    conc_dict = {sp: record_states[:, i] / NA_V for i, sp in enumerate(species)}
+
+    return StochasticResult(
+        times=record_times,
+        counts=counts_dict,
+        concentrations=conc_dict,
+        n_events=int(len(record_times)),
+        success=success,
+        volume_L=volume_L,
+    )
 
 
 def build_ode_function(

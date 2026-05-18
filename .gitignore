@@ -78,3 +78,4 @@ venv.bak/
 .Trashes
 ehthumbs.db
 Thumbs.db
+tests/__pycache__
