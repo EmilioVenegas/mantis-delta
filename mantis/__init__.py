@@ -12,4 +12,10 @@ __all__ = [
     "StochasticResult", "gillespie_simulate", "tau_leap_simulate",
     "CRNTResult",
 ]
-__version__ = "0.1.0"
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
+
+try:
+    # Derived from git tags at build time via setuptools-scm.
+    __version__ = _pkg_version("mantis-delta")
+except PackageNotFoundError:  # source tree that was never installed
+    __version__ = "0.0.0+unknown"

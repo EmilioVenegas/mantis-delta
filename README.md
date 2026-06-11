@@ -1,8 +1,22 @@
-# mantis-delta — Mass-Action Network Theory and Steady-State Characterization for Chemical Reaction Networks
+<!-- Placeholder logo — replace docs/assets/logo.svg with final artwork (a transparent PNG/SVG both work). -->
+<p align="center">
+  <img src="docs/assets/banner.png" alt="mantis-delta banner" width="1280">
+</p>
 
+<h1 align="center">mantis-delta</h1>
+<p align="center"><em>Mass-Action Network Theory and Steady-State Characterization for Chemical Reaction Networks</em></p>
+
+<p align="center">
+<a href="#running-the-tests"><img src="https://img.shields.io/badge/tests-93%20passed-brightgreen" alt="Tests"></a>
+<a href="#installation"><img src="https://img.shields.io/badge/python-%E2%89%A53.10-blue" alt="Python"></a>
+<a href="#license"><img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="License: MIT"></a>
+</p>
+
+<!-- Original badges, superseded by the centered block above:
 [![Tests](https://img.shields.io/badge/tests-93%20passed-brightgreen)](#running-the-tests)
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](#installation)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](#license)
+-->
 
 **mantis-delta** is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for *all* physically admissible rate constants — without running a single simulation.
 
