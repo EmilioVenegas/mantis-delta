@@ -1,22 +1,15 @@
-<!-- Placeholder logo — replace docs/assets/logo.svg with final artwork (a transparent PNG/SVG both work). -->
 <p align="center">
   <img src="docs/assets/banner.png" alt="mantis-delta banner" width="1280">
 </p>
 
 <h1 align="center">mantis-delta</h1>
-<p align="center"><em>Mass-Action Network Theory and Steady-State Characterization for Chemical Reaction Networks</em></p>
+<p align="center"><em>Mass-Action Network Theory, Inference, and Stability for Chemical Reaction Networks</em></p>
 
 <p align="center">
-<a href="#running-the-tests"><img src="https://img.shields.io/badge/tests-93%20passed-brightgreen" alt="Tests"></a>
+<a href="#running-the-tests"><img src="https://img.shields.io/badge/tests-108%20passed-brightgreen" alt="Tests"></a>
 <a href="#installation"><img src="https://img.shields.io/badge/python-%E2%89%A53.10-blue" alt="Python"></a>
 <a href="#license"><img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="License: MIT"></a>
 </p>
-
-<!-- Original badges, superseded by the centered block above:
-[![Tests](https://img.shields.io/badge/tests-93%20passed-brightgreen)](#running-the-tests)
-[![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue)](#installation)
-[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](#license)
--->
 
 **mantis-delta** is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for *all* physically admissible rate constants — without running a single simulation.
 
@@ -25,6 +18,8 @@ The library supports three classes of chemical networks:
 - **Closed networks** — all species are dynamic; conservation laws are automatically computed and preserved by the solver (e.g. Michaelis-Menten, CHA cascade, Goldbeter-Koshland switch).
 - **Open / chemostatted networks** — selected species are held at fixed concentrations by an external reservoir (e.g. Brusselator with A and B chemostatted). Chemostatted species are excluded from the ODE system and stoichiometry rank calculation but appear in flux expressions. The solver uses a pure algebraic strategy that can locate both stable *and* **unstable fixed points** — including Hopf-bifurcation centres that forward integration can never reach.
 - **Semi-open networks** — some species chemostatted, others conserved among themselves.
+
+**More:** [API documentation site](https://emiliovenegas.github.io/mantis-delta) · [changelog](CHANGELOG.md) · [preprint (PDF)](paper/mantis_preprint.pdf)
 
 ---
 
@@ -43,7 +38,8 @@ The library supports three classes of chemical networks:
    - [Stability analysis](#6-stability-analysis)
    - [Bifurcation scanning](#7-bifurcation-scanning)
    - [Visualization](#8-visualization)
-   - [Stochastic simulation](#9-stochastic-simulation)
+   - [Time-course simulation (deterministic ODE)](#9-time-course-simulation-deterministic-ode)
+   - [Stochastic simulation](#10-stochastic-simulation)
 5. [API reference](#api-reference)
 6. [Examples](#examples)
 7. [Troubleshooting](#troubleshooting)
@@ -498,7 +494,38 @@ plt.savefig("bifurcation.png", dpi=150)
 
 ---
 
-### 9. Stochastic simulation
+### 9. Time-course simulation (deterministic ODE)
+
+`steady_states()` answers *where the system ends up*; `simulate()` answers *how it gets there*. It integrates the mass-action ODEs forward in time with SciPy's stiff Radau solver and returns the full trajectory.
+
+```python
+res = rn.simulate(
+    initial_conditions={"A": 2.0, "B": 0.0},
+    t_span=(0.0, 10.0),       # (t0, tf) in seconds
+)
+
+res.times                    # np.ndarray of time points
+res.concentrations           # dict[str, np.ndarray] — one trajectory per species
+res.success                  # bool — did the integrator converge?
+res.final()                  # dict[str, float] — concentrations at tf
+res.at(2.5)                  # dict[str, float] — interpolated values at t = 2.5 s
+```
+
+By default the solution is stored at 200 log-spaced points across `t_span`; pass `t_eval=` (an array of times) to control the grid, or tighten `rtol` / `atol` for stiff systems. Chemostatted species are held at their fixed values throughout. To plot a time course:
+
+```python
+import matplotlib.pyplot as plt
+
+res = rn.simulate({"A": 2.0, "B": 0.0}, t_span=(0.0, 10.0))
+for name, traj in res.concentrations.items():
+    plt.plot(res.times, traj, label=name)
+plt.xlabel("time (s)"); plt.ylabel("concentration (M)"); plt.legend()
+plt.show()
+```
+
+---
+
+### 10. Stochastic simulation
 
 When molecule counts are low (single-cell volumes, ≤10³ molecules) the deterministic ODE no longer matches reality. Two stochastic simulators are wired into `CRNetwork`:
 
@@ -646,6 +673,31 @@ Scans one rate constant over a log-spaced range.
 
 ---
 
+##### `simulate(initial_conditions, t_span, t_eval=None, rtol=1e-8, atol=1e-12) → SimulationResult`
+
+Integrates the mass-action ODEs forward in time (SciPy Radau) and returns the full trajectory.
+
+| Parameter | Default | Description |
+|---|---|---|
+| `initial_conditions` | *(required)* | `dict[str, float]` — initial concentrations; missing species default to 0 |
+| `t_span` | *(required)* | `(t0, tf)` tuple in seconds |
+| `t_eval` | `None` | Times at which to store the solution; defaults to 200 log-spaced points across `t_span` |
+| `rtol` / `atol` | `1e-8` / `1e-12` | Relative / absolute solver tolerances |
+
+---
+
+##### `stochastic_simulate(initial_conditions, t_span, volume_L, *, initial_as='concentration', max_events=1_000_000, seed=None) → StochasticResult`
+
+Single-trajectory exact Gillespie SSA. See [Stochastic simulation](#10-stochastic-simulation).
+
+---
+
+##### `tau_leap_simulate(initial_conditions, t_span, volume_L, *, epsilon=0.03, tau=None, n_record=200, initial_as='concentration', seed=None) → StochasticResult`
+
+Single-trajectory τ-leap approximation. See [Stochastic simulation](#10-stochastic-simulation).
+
+---
+
 ##### `draw(ax=None, layout='spring') → matplotlib.axes.Axes`
 
 Draws the complex reaction graph using NetworkX and Matplotlib.
@@ -673,6 +725,39 @@ class SteadyState:
 **Eigenvalue filtering:** eigenvalues with `|λ| < 1e-4 · max|λ|` are treated as zero (arising from conservation law dimensions) and excluded from the stability classification.
 
 **`is_oscillatory` semantics:** `True` for any fixed point with complex eigenvalues — this includes both stable spirals (Re < 0, damped oscillations) and unstable foci (Re > 0, the Hopf case). In both cases the system rotates in phase space near the fixed point.
+
+---
+
+### `SimulationResult`
+
+Returned by `simulate()` (deterministic ODE time-course).
+
+```python
+@dataclass
+class SimulationResult:
+    times:          np.ndarray              # time points (s)
+    concentrations: dict[str, np.ndarray]   # species → trajectory over `times`
+    success:        bool                    # did the integrator converge?
+```
+
+Use `.final()` for the concentrations at the last time point and `.at(t)` for interpolated values at an arbitrary time.
+
+---
+
+### `StochasticResult`
+
+Returned by `stochastic_simulate()` and `tau_leap_simulate()`.
+
+```python
+@dataclass
+class StochasticResult:
+    times:          np.ndarray              # event / record times (s)
+    counts:         dict[str, np.ndarray]   # species → molecule counts
+    concentrations: dict[str, np.ndarray]   # species → concentration (M)
+    success:        bool                    # finished before exhausting events?
+```
+
+Also provides `.at(t)` and `.final()`.
 
 ---
 
@@ -790,7 +875,7 @@ pip install -e .
 pytest tests/ -v
 ```
 
-The test suite has 93 tests across seven files:
+The test suite has 108 tests across nine files:
 
 | File | Tests | What is covered |
 |---|---|---|
@@ -801,6 +886,8 @@ The test suite has 93 tests across seven files:
 | `test_cha.py` | 18 | End-to-end integration: all structural properties, conservation laws, CRNT summary strings, SS attributes |
 | `test_gk_switch.py` | 20 | Goldbeter-Koshland switch: CRNT analysis (δ=1, D1T), conservation laws, symmetric SS, monostability scan |
 | `test_chemostatted.py` | 13 | Chemostatted species: excluded from ODEs/stoichiometry, Brusselator unstable FP, stable spiral, fixed-point location, CRNT summary, backward compatibility |
+| `test_stochastic.py` | 7 | Gillespie SSA: count/concentration conversion, mass conservation, mean-trajectory agreement with the ODE |
+| `test_tau_leap.py` | 8 | τ-leap: adaptive and fixed-τ stepping, leap-rejection on negative counts, accuracy vs. exact SSA |
 
 ---
 
@@ -880,7 +967,7 @@ If you use mantis-delta in published work, please cite:
   title   = {mantis-delta: Mass-Action Network Theory, Inference, and Stability},
   year    = {2026},
   url     = {https://github.com/emiliovenegas/mantis-delta},
-  version = {0.1.0}
+  version = {0.2.0}
 }
 ```
 
