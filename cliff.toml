@@ -21,12 +21,25 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
 ### {{ group | upper_first }}
 {% for commit in commits %}
-- {{ commit.message | upper_first }}\
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}\
+{% if commit.body %}
+
+{{ commit.body | trim | indent(width=2, first=true) }}
+{% endif %}\
 {% endfor %}
 {% endfor %}\n
 """
 trim = true
 footer = ""
+
+# Version-bump policy: how `git-cliff --bump` derives the next version from the
+# Conventional Commit types since the last tag.
+#   feat:            -> MINOR  (0.2.x -> 0.3.0)
+#   fix:/perf:/etc.  -> PATCH  (0.2.0 -> 0.2.1)
+#   feat!: / BREAKING CHANGE -> MAJOR (held to MINOR while pre-1.0)
+[bump]
+features_always_bump_minor = true
+breaking_always_bump_major = false   # pre-1.0: a breaking change bumps MINOR, not 1.0.0
 
 [git]
 conventional_commits = true
