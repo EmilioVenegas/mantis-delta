@@ -5,7 +5,7 @@ This file is generated from the git history by [git-cliff](https://git-cliff.org
 The format follows [Keep a Changelog](https://keepachangelog.com) and the project
 uses [Semantic Versioning](https://semver.org).
 
-## [Unreleased]
+## [0.2.1] - 2026-06-14
 
 ### Documentation
 
