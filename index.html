@@ -1,0 +1,2642 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://emiliovenegas.github.io/mantis-delta/">
+      
+      
+      
+        <link rel="next" href="api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>mantis-delta</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mantis-delta-chemical-reaction-network-theory-in-python" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="mantis-delta" class="md-header__button md-logo" aria-label="mantis-delta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mantis-delta
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/emiliovenegas/mantis-delta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    emiliovenegas/mantis-delta
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="mantis-delta" class="md-nav__button md-logo" aria-label="mantis-delta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    mantis-delta
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/emiliovenegas/mantis-delta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    emiliovenegas/mantis-delta
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reaction-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction network
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stoichiometry-matrix-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stoichiometry matrix N
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-zero-theorem-feinberg-hornjackson-1972" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency Zero Theorem (Feinberg / Horn–Jackson 1972)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-one-theorem-feinberg-1995" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency One Theorem (Feinberg 1995)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weak-reversibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weak reversibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="User guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-defining-a-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Defining a network
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Defining a network">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reaction-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate constants
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structural-properties-no-rates-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structural properties (no rates needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-crnt-structural-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. CRNT structural analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-conservation-laws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Conservation laws
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-symbolic-odes-and-jacobian" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Symbolic ODEs and Jacobian
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Symbolic ODEs and Jacobian">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#odes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ODEs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jacobian" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jacobian
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-finding-steady-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Finding steady states
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Finding steady states">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interpreting-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlling-the-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling the search
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-stability-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Stability analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-bifurcation-scanning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Bifurcation scanning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Visualization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reaction-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bifurcation-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bifurcation diagram
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crnetwork" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRNetwork
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CRNetwork">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structural-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structural properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crnt_summary-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        crnt_summary() → str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate_keys-liststr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rate_keys() → list[str]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#odesnumeric_ratestrue-dictstr-sympyexpr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        odes(numeric_rates=True) → dict[str, sympy.Expr]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jacobian-sympymatrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jacobian() → sympy.Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jacobian_atss-sympymatrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jacobian_at(ss) → sympy.Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steady_statesinitial_conditions-n_attempts50-seednone-liststeadystate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        steady_states(initial_conditions, n_attempts=50, seed=None) → list[SteadyState]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bifurcationparameter-range-n_points100-initial_conditionsnone-plotfalse-bifurcationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bifurcation(parameter, range, n_points=100, initial_conditions=None, plot=False) → BifurcationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#drawaxnone-layoutspring-matplotlibaxesaxes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        draw(ax=None, layout='spring') → matplotlib.axes.Axes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steadystate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SteadyState
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bifurcationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BifurcationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crntresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRNTResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#01_simple_reversiblepy-a-b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        01_simple_reversible.py — A ⇌ B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#02_michaelis_mentenpy-enzyme-kinetics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        02_michaelis_menten.py — Enzyme kinetics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#03_brusselatorpy-nonlinear-open-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        03_brusselator.py — Nonlinear open system
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#04_cha_cascadepy-cha-mir-21-biosensor-full-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        04_cha_cascade.py — CHA miR-21 biosensor (full demo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#05_brusselator_chemostattedpy-brusselator-with-chemostatted-species" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        05_brusselator_chemostatted.py — Brusselator with chemostatted species
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#06_goldbeter_koshlandpy-goldbeter-koshland-switch-literature-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        06_goldbeter_koshland.py — Goldbeter-Koshland switch (literature validation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#steady_states-returns-an-empty-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        steady_states() returns an empty list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-constant-is-not-being-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate constant is not being used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rnodes-shows-0-for-some-species" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rn.odes() shows 0 for some species
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import-error-modulenotfounderror-no-module-named-mantis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import error: ModuleNotFoundError: No module named 'mantis'
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steady-state-has-residual-1e-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steady state has residual &gt; 1e-4
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#background-and-theory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background and theory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Background and theory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cha-mir-21-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CHA miR-21 network
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Citation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        License
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reaction-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction network
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stoichiometry-matrix-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stoichiometry matrix N
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-zero-theorem-feinberg-hornjackson-1972" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency Zero Theorem (Feinberg / Horn–Jackson 1972)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-one-theorem-feinberg-1995" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency One Theorem (Feinberg 1995)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weak-reversibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weak reversibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="User guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-defining-a-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Defining a network
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Defining a network">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reaction-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate constants
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structural-properties-no-rates-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structural properties (no rates needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-crnt-structural-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. CRNT structural analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-conservation-laws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Conservation laws
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-symbolic-odes-and-jacobian" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Symbolic ODEs and Jacobian
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Symbolic ODEs and Jacobian">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#odes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ODEs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jacobian" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jacobian
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-finding-steady-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Finding steady states
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Finding steady states">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interpreting-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlling-the-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling the search
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-stability-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Stability analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-bifurcation-scanning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Bifurcation scanning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Visualization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reaction-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bifurcation-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bifurcation diagram
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crnetwork" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRNetwork
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CRNetwork">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structural-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structural properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crnt_summary-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        crnt_summary() → str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate_keys-liststr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rate_keys() → list[str]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#odesnumeric_ratestrue-dictstr-sympyexpr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        odes(numeric_rates=True) → dict[str, sympy.Expr]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jacobian-sympymatrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jacobian() → sympy.Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jacobian_atss-sympymatrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        jacobian_at(ss) → sympy.Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steady_statesinitial_conditions-n_attempts50-seednone-liststeadystate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        steady_states(initial_conditions, n_attempts=50, seed=None) → list[SteadyState]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bifurcationparameter-range-n_points100-initial_conditionsnone-plotfalse-bifurcationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bifurcation(parameter, range, n_points=100, initial_conditions=None, plot=False) → BifurcationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#drawaxnone-layoutspring-matplotlibaxesaxes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        draw(ax=None, layout='spring') → matplotlib.axes.Axes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steadystate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SteadyState
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bifurcationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BifurcationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crntresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRNTResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#01_simple_reversiblepy-a-b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        01_simple_reversible.py — A ⇌ B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#02_michaelis_mentenpy-enzyme-kinetics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        02_michaelis_menten.py — Enzyme kinetics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#03_brusselatorpy-nonlinear-open-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        03_brusselator.py — Nonlinear open system
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#04_cha_cascadepy-cha-mir-21-biosensor-full-demo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        04_cha_cascade.py — CHA miR-21 biosensor (full demo)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#05_brusselator_chemostattedpy-brusselator-with-chemostatted-species" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        05_brusselator_chemostatted.py — Brusselator with chemostatted species
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#06_goldbeter_koshlandpy-goldbeter-koshland-switch-literature-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        06_goldbeter_koshland.py — Goldbeter-Koshland switch (literature validation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#steady_states-returns-an-empty-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        steady_states() returns an empty list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-constant-is-not-being-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate constant is not being used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rnodes-shows-0-for-some-species" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rn.odes() shows 0 for some species
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import-error-modulenotfounderror-no-module-named-mantis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import error: ModuleNotFoundError: No module named 'mantis'
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steady-state-has-residual-1e-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steady state has residual &gt; 1e-4
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#background-and-theory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background and theory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Background and theory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cha-mir-21-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CHA miR-21 network
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Citation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        License
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="mantis-delta-chemical-reaction-network-theory-in-python">mantis-delta — Chemical Reaction Network Theory in Python</h1>
+<p><a href="#running-the-tests"><img alt="Tests" src="https://img.shields.io/badge/tests-80%20passed-brightgreen" /></a>
+<a href="#installation"><img alt="Python" src="https://img.shields.io/badge/python-%E2%89%A53.10-blue" /></a>
+<a href="#license"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-lightgrey" /></a></p>
+<p><strong>mantis-delta</strong> is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically using conservation-law-aware integration. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for <em>all</em> physically admissible rate constants — without running a single simulation.</p>
+<hr />
+<h2 id="table-of-contents">Table of contents</h2>
+<ol>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#core-concepts">Core concepts</a></li>
+<li><a href="#quick-start">Quick start</a></li>
+<li><a href="#user-guide">User guide</a></li>
+<li><a href="#1-defining-a-network">Defining a network</a></li>
+<li><a href="#2-crnt-structural-analysis">CRNT structural analysis</a></li>
+<li><a href="#3-conservation-laws">Conservation laws</a></li>
+<li><a href="#4-symbolic-odes-and-jacobian">Symbolic ODEs and Jacobian</a></li>
+<li><a href="#5-finding-steady-states">Finding steady states</a></li>
+<li><a href="#6-stability-analysis">Stability analysis</a></li>
+<li><a href="#7-bifurcation-scanning">Bifurcation scanning</a></li>
+<li><a href="#8-visualization">Visualization</a></li>
+<li><a href="#api-reference">API reference</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#background-and-theory">Background and theory</a></li>
+<li><a href="#citation">Citation</a></li>
+<li><a href="#license">License</a></li>
+</ol>
+<hr />
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash"># Inside a virtual environment (recommended)
+pip install mantis-delta
+
+# From source
+git clone https://github.com/emiliovenegas/mantis-delta
+cd mantis-delta
+pip install -e .
+</code></pre>
+<p><strong>Requirements:</strong> Python ≥ 3.10, NumPy ≥ 1.24, SciPy ≥ 1.10, SymPy ≥ 1.12, Matplotlib ≥ 3.6, NetworkX ≥ 3.0.</p>
+<hr />
+<h2 id="core-concepts">Core concepts</h2>
+<p>You do not need to be a CRNT expert to use this library, but a few terms come up repeatedly.</p>
+<h3 id="reaction-network">Reaction network</h3>
+<p>A <strong>chemical reaction network</strong> is a set of reactions of the form</p>
+<pre><code>ν₁A + ν₂B  →  μ₁C + μ₂D
+</code></pre>
+<p>where species names (<code>A</code>, <code>B</code>, …) and their stoichiometric coefficients (<code>ν</code>, <code>μ</code>) define how molecules combine and transform. Each side of a reaction arrow is called a <strong>complex</strong>. In mantis-delta, complexes are the fundamental node type of the reaction graph.</p>
+<h3 id="stoichiometry-matrix-n">Stoichiometry matrix <em>N</em></h3>
+<p>The stoichiometry matrix <strong>N</strong> has shape <em>(n_species × n_reactions)</em>. Entry <code>N[i, j]</code> is the net change in species <code>i</code> due to reaction <code>j</code> (products minus reactants). Conservation laws — moiety totals that do not change over time — are vectors in the left null space of <strong>N</strong>.</p>
+<h3 id="deficiency">Deficiency</h3>
+<p>The <strong>deficiency</strong> δ = <em>n</em> − <em>l</em> − <em>s</em>, where:</p>
+<ul>
+<li><em>n</em> = number of distinct complexes</li>
+<li><em>l</em> = number of linkage classes (connected components of the reaction graph)</li>
+<li><em>s</em> = rank of <strong>N</strong></li>
+</ul>
+<p>δ is always a non-negative integer. It measures how much "redundancy" the network has. δ = 0 networks are the simplest; δ = 1 networks are the next tier.</p>
+<h3 id="deficiency-zero-theorem-feinberg-hornjackson-1972">Deficiency Zero Theorem (Feinberg / Horn–Jackson 1972)</h3>
+<p>If δ = 0 <strong>and</strong> the network is weakly reversible, then for <em>any</em> positive rate constants, mass-action kinetics guarantees:</p>
+<ul>
+<li>Exactly one positive steady state per stoichiometry class</li>
+<li>That steady state is asymptotically stable</li>
+<li>No sustained oscillations or bistability are possible</li>
+</ul>
+<h3 id="deficiency-one-theorem-feinberg-1995">Deficiency One Theorem (Feinberg 1995)</h3>
+<p>If δ = 1 and each linkage class has per-LC deficiency ≤ 1 (with at most one LC having deficiency 1), then for <em>any</em> positive rate constants, mass-action kinetics guarantees at most one steady state per stoichiometry class.</p>
+<h3 id="weak-reversibility">Weak reversibility</h3>
+<p>A network is <strong>weakly reversible</strong> if every reaction pathway can be reversed (not necessarily by a single reaction, but by a sequence). Formally, every weakly connected component of the reaction graph is strongly connected.</p>
+<hr />
+<h2 id="quick-start">Quick start</h2>
+<pre><code class="language-python">from mantis import CRNetwork
+
+# Build the network
+rn = CRNetwork.from_string(
+    [&quot;A &lt;-&gt; B&quot;],
+    rates={&quot;A -&gt; B&quot;: 1.0, &quot;B -&gt; A&quot;: 0.5},
+)
+
+# Structural analysis
+print(rn.crnt_summary())
+
+# Symbolic ODEs
+print(rn.odes())           # {'A': -1.0*A + 0.5*B, 'B': 1.0*A - 0.5*B}
+
+# Numerical steady state
+ss = rn.steady_states({&quot;A&quot;: 2.0, &quot;B&quot;: 0.0})[0]
+print(ss.concentrations)   # {'A': 0.6667, 'B': 1.3333}
+print(ss.is_stable)        # True
+</code></pre>
+<hr />
+<h2 id="user-guide">User guide</h2>
+<h3 id="1-defining-a-network">1. Defining a network</h3>
+<p>Use <code>CRNetwork.from_string()</code> with a list of reaction strings and an optional <code>rates</code> dictionary.</p>
+<h4 id="reaction-syntax">Reaction syntax</h4>
+<table>
+<thead>
+<tr>
+<th>Syntax</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"A -&gt; B"</code></td>
+<td>Irreversible: A → B</td>
+</tr>
+<tr>
+<td><code>"A &lt;-&gt; B"</code></td>
+<td>Reversible: A ⇌ B (expands to two reactions)</td>
+</tr>
+<tr>
+<td><code>"2A + B -&gt; C"</code></td>
+<td>Stoichiometric coefficients allowed</td>
+</tr>
+<tr>
+<td><code>"miR21_H1 -&gt; miR21 + H1"</code></td>
+<td>Underscores in species names OK</td>
+</tr>
+<tr>
+<td><code>"ES -&gt; E + P"</code></td>
+<td>Multi-product reactions OK</td>
+</tr>
+</tbody>
+</table>
+<p>Species names must start with a letter and contain only letters, digits, and underscores.</p>
+<pre><code class="language-python">rn = CRNetwork.from_string([
+    &quot;E + S &lt;-&gt; ES&quot;,
+    &quot;ES -&gt; E + P&quot;,
+])
+</code></pre>
+<h4 id="rate-constants">Rate constants</h4>
+<p>The <code>rates</code> dictionary maps reaction strings to float values. Keys are <strong>normalized automatically</strong> — the order of species on each side does not matter, and extra whitespace is ignored:</p>
+<pre><code class="language-python"># All three of these are equivalent:
+rates = {&quot;A + B -&gt; C&quot;:  1.0}
+rates = {&quot;B + A -&gt; C&quot;:  1.0}   # species order on left doesn't matter
+rates = {&quot;A  +  B -&gt; C&quot;: 1.0}  # whitespace is ignored
+</code></pre>
+<p>If you are unsure of the canonical form expected for a particular reaction, call <code>rn.rate_keys()</code>:</p>
+<pre><code class="language-python">rn = CRNetwork.from_string([&quot;E + S &lt;-&gt; ES&quot;, &quot;ES -&gt; E + P&quot;])
+print(rn.rate_keys())
+# ['E + S -&gt; ES', 'ES -&gt; E + S', 'ES -&gt; E + P']
+</code></pre>
+<p>Use those exact strings as keys in your <code>rates</code> dictionary.</p>
+<h4 id="structural-properties-no-rates-needed">Structural properties (no rates needed)</h4>
+<p>The following properties are available on any <code>CRNetwork</code> regardless of whether rates were supplied. They are computed lazily and cached on first access.</p>
+<pre><code class="language-python">rn.species            # ['E', 'ES', 'P', 'S']
+rn.n_species          # 4
+rn.n_complexes        # 3
+rn.n_reactions        # 3
+rn.n_linkage_classes  # 1
+rn.deficiency         # 0
+rn.is_weakly_reversible  # False
+rn.stoichiometry_matrix  # np.ndarray, shape (4, 3)
+</code></pre>
+<hr />
+<h3 id="2-crnt-structural-analysis">2. CRNT structural analysis</h3>
+<p><code>crnt_summary()</code> prints a full analysis report as a string:</p>
+<pre><code class="language-python">rn = CRNetwork.from_string([&quot;A &lt;-&gt; B&quot;], rates={&quot;A -&gt; B&quot;: 1.0, &quot;B -&gt; A&quot;: 0.5})
+print(rn.crnt_summary())
+</code></pre>
+<pre><code>CRNetwork: 2 species, 2 complexes, 1 linkage classes
+Stoichiometry matrix rank: 1
+Deficiency: δ = 2 - 1 - 1 = 0
+Weakly reversible: Yes
+
+Deficiency Zero Theorem: Applicable
+  → Unique asymptotically stable steady state per stoichiometry class.
+  → Bistability and oscillations are impossible.
+Deficiency One Theorem: NOT applicable (δ ≠ 1)
+
+Conservation laws (1):
+  [1] A + B = const
+</code></pre>
+<p>When a theorem is applicable, <code>crnt_summary()</code> states what the theorem guarantees. When it is not applicable, it explains why (δ value, or not weakly reversible).</p>
+<p>You can also check individual flags programmatically:</p>
+<pre><code class="language-python">rn.deficiency               # int
+rn.is_weakly_reversible     # bool
+rn._crnt_result.deficiency_zero_applies  # bool
+rn._crnt_result.deficiency_one_applies  # bool
+</code></pre>
+<hr />
+<h3 id="3-conservation-laws">3. Conservation laws</h3>
+<p>Conservation laws are moiety totals that remain constant along every trajectory. They appear as the left null space of <strong>N</strong> and are returned as SymPy expressions with non-negative integer coefficients.</p>
+<pre><code class="language-python">rn = CRNetwork.from_string([&quot;E + S &lt;-&gt; ES&quot;, &quot;ES -&gt; E + P&quot;])
+for law in rn.conservation_laws:
+    print(law, &quot;= const&quot;)
+# E + ES = const
+# ES + P + S = const
+</code></pre>
+<p>This tells you that <code>E + ES</code> is invariant (enzyme is neither created nor destroyed) and <code>ES + P + S</code> is invariant (substrate and product together are conserved).</p>
+<p><strong>Using conservation laws to set initial conditions:</strong> the steady state the solver finds depends on the conservation law totals determined by your initial conditions. For example, if you start with <code>E=1e-6</code> and <code>ES=0</code>, then <code>E + ES = 1e-6</code> throughout. A different starting total will produce a different steady state.</p>
+<pre><code class="language-python"># The total E_total = E0 is encoded in the initial conditions:
+ic = {&quot;E&quot;: 1e-6, &quot;S&quot;: 1e-4, &quot;ES&quot;: 0.0, &quot;P&quot;: 0.0}
+ss = rn.steady_states(ic)[0]
+print(ss.concentrations[&quot;E&quot;] + ss.concentrations[&quot;ES&quot;])  # ≈ 1e-6
+</code></pre>
+<hr />
+<h3 id="4-symbolic-odes-and-jacobian">4. Symbolic ODEs and Jacobian</h3>
+<h4 id="odes">ODEs</h4>
+<p><code>odes()</code> returns a dictionary mapping each species name to its time derivative as a SymPy expression.</p>
+<pre><code class="language-python">rn = CRNetwork.from_string([&quot;A &lt;-&gt; B&quot;], rates={&quot;A -&gt; B&quot;: 1.0, &quot;B -&gt; A&quot;: 0.5})
+
+# With numeric rates substituted in (default):
+odes = rn.odes(numeric_rates=True)
+# {'A': -1.0*A + 0.5*B, 'B': 1.0*A - 0.5*B}
+
+# With symbolic rate constants k_1, k_2, ...:
+odes_sym = rn.odes(numeric_rates=False)
+# {'A': -k_1*A + k_2*B, 'B': k_1*A - k_2*B}
+</code></pre>
+<p>These are standard SymPy expressions. You can differentiate, integrate, substitute, simplify, or print them in LaTeX:</p>
+<pre><code class="language-python">import sympy
+A = sympy.Symbol(&quot;A&quot;)
+print(sympy.latex(odes[&quot;A&quot;]))   # - 1.0 A + 0.5 B
+</code></pre>
+<h4 id="jacobian">Jacobian</h4>
+<p><code>jacobian()</code> returns the symbolic Jacobian matrix (∂f_i/∂x_j) as a SymPy Matrix, computed from the symbolic ODEs. It is cached after the first call.</p>
+<pre><code class="language-python">J = rn.jacobian()
+# Matrix([[-k_1, k_2], [k_1, -k_2]])
+</code></pre>
+<p>To evaluate the Jacobian at a specific steady state with numeric rates:</p>
+<pre><code class="language-python">ss = rn.steady_states({&quot;A&quot;: 2.0, &quot;B&quot;: 0.0})[0]
+J_num = rn.jacobian_at(ss.concentrations)
+# Matrix([[-1.0, 0.5], [1.0, -0.5]])
+</code></pre>
+<hr />
+<h3 id="5-finding-steady-states">5. Finding steady states</h3>
+<p><code>steady_states()</code> takes a dictionary of initial concentrations and returns a list of <code>SteadyState</code> objects.</p>
+<pre><code class="language-python">ic = {&quot;A&quot;: 2.0, &quot;B&quot;: 0.0}
+ss_list = rn.steady_states(ic, n_attempts=50, seed=0)
+</code></pre>
+<p><strong>How the solver works:</strong></p>
+<ol>
+<li><strong>Primary strategy</strong> — integrate the ODE from the given initial conditions to t = 10⁶ s using SciPy's stiff Radau integrator. This exactly preserves conservation law totals and reliably finds the attractor.</li>
+<li><strong>Secondary strategy</strong> — generate <code>n_attempts − 1</code> random starting points that satisfy the conservation constraints (same totals as <code>ic</code>), and run a bounded least-squares solver from each. This finds additional steady states in multistable systems.</li>
+</ol>
+<p>Solutions are filtered for physical validity (no negative concentrations) and uniqueness (duplicates within 1% relative distance are discarded).</p>
+<h4 id="interpreting-results">Interpreting results</h4>
+<pre><code class="language-python">ss = ss_list[0]
+
+ss.concentrations   # dict[str, float] — species → concentration (M)
+ss.eigenvalues      # np.ndarray (complex) — eigenvalues of the Jacobian at this SS
+ss.is_stable        # bool — True if all significant eigenvalues have Re &lt; 0
+ss.is_oscillatory   # bool — True if any significant eigenvalue has Im ≠ 0 and Re &lt; 0
+ss.residual         # float — ‖f(x*)‖₂ at the solution; &lt; 1e-6 is good, &lt; 1e-10 is excellent
+</code></pre>
+<p><strong>Note on zero eigenvalues:</strong> for a network with <em>c</em> conservation laws, the Jacobian always has at least <em>c</em> eigenvalues near zero (corresponding to the null directions of the dynamics). These are filtered out automatically before computing <code>is_stable</code> and <code>is_oscillatory</code>.</p>
+<h4 id="controlling-the-search">Controlling the search</h4>
+<pre><code class="language-python">ss_list = rn.steady_states(
+    ic,
+    n_attempts=100,   # more attempts → more thorough search for multiple SS
+    seed=42,          # fix seed for reproducibility
+)
+</code></pre>
+<p>If <code>ss_list</code> is empty, see <a href="#troubleshooting">Troubleshooting</a>.</p>
+<hr />
+<h3 id="6-stability-analysis">6. Stability analysis</h3>
+<p>Stability is determined by the eigenvalues of the Jacobian evaluated at each steady state.</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All significant Re(λ) &lt; 0</td>
+<td>Stable node (or stable spiral if Im ≠ 0)</td>
+</tr>
+<tr>
+<td>Any significant Re(λ) &gt; 0</td>
+<td>Unstable</td>
+</tr>
+<tr>
+<td>Any significant Re(λ) = 0</td>
+<td>Non-hyperbolic (borderline)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">ss = rn.steady_states(ic)[0]
+print(ss.is_stable)       # True / False
+print(ss.is_oscillatory)  # True if any λ has Im ≠ 0 and Re &lt; 0 (damped spiral)
+print(ss.eigenvalues)     # full array including conservation-law zeros
+</code></pre>
+<p>For a deeper look, evaluate the Jacobian symbolically and inspect it:</p>
+<pre><code class="language-python">import numpy as np
+from scipy.linalg import eigvals
+
+J_num = rn.jacobian_at(ss.concentrations)
+eigs = eigvals(np.array(J_num.tolist(), dtype=complex))
+print(eigs)
+</code></pre>
+<hr />
+<h3 id="7-bifurcation-scanning">7. Bifurcation scanning</h3>
+<p><code>bifurcation()</code> varies one rate constant over a log-spaced range and collects all steady states at each point.</p>
+<pre><code class="language-python">result = rn.bifurcation(
+    parameter=&quot;A -&gt; B&quot;,          # rate key to vary
+    range=(0.01, 100.0),         # (min, max) — log scale
+    n_points=50,
+    initial_conditions={&quot;A&quot;: 1.0, &quot;B&quot;: 0.0},
+)
+</code></pre>
+<p>The returned <code>BifurcationResult</code> object contains:</p>
+<pre><code class="language-python">result.parameter_name    # str — canonical rate key
+result.parameter_values  # np.ndarray — the scanned values
+result.steady_states     # list[list[SteadyState]] — one list per parameter value
+</code></pre>
+<p>Plot a bifurcation diagram for one species:</p>
+<pre><code class="language-python">from mantis.plot import plot_bifurcation
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+plot_bifurcation(result, species=&quot;B&quot;, ax=ax)
+plt.show()
+</code></pre>
+<p>Stable branches are drawn solid; unstable branches are drawn dashed.</p>
+<hr />
+<h3 id="8-visualization">8. Visualization</h3>
+<h4 id="reaction-graph">Reaction graph</h4>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10, 6))
+rn.draw(ax=ax, layout=&quot;spring&quot;)
+plt.show()
+</code></pre>
+<p>Nodes are reaction complexes (e.g. <code>miR21 + H1</code>); directed edges are reactions. Available layouts: <code>"spring"</code> (default), <code>"shell"</code>, <code>"spectral"</code>, <code>"planar"</code>.</p>
+<h4 id="bifurcation-diagram">Bifurcation diagram</h4>
+<pre><code class="language-python">from mantis.plot import plot_bifurcation
+
+fig, ax = plt.subplots()
+plot_bifurcation(result, species=&quot;H1H2_CP&quot;, ax=ax)
+ax.set_ylabel(&quot;[H1H2_CP] (M)&quot;)
+plt.tight_layout()
+plt.savefig(&quot;bifurcation.png&quot;, dpi=150)
+</code></pre>
+<hr />
+<h2 id="api-reference">API reference</h2>
+<h3 id="crnetwork"><code>CRNetwork</code></h3>
+<pre><code class="language-python">CRNetwork.from_string(reaction_strings, rates=None) → CRNetwork
+</code></pre>
+<p>The main entry point. <code>reaction_strings</code> is a list of strings (see <a href="#reaction-syntax">syntax table</a>). <code>rates</code> is an optional <code>dict[str, float]</code>.</p>
+<hr />
+<h4 id="structural-properties">Structural properties</h4>
+<p>All properties below are cached after first access. They do not require rate constants.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>species</code></td>
+<td><code>list[str]</code></td>
+<td>All species, sorted alphabetically</td>
+</tr>
+<tr>
+<td><code>complexes</code></td>
+<td><code>list[Complex]</code></td>
+<td>All complexes (frozensets of <code>(name, coeff)</code> pairs)</td>
+</tr>
+<tr>
+<td><code>stoichiometry_matrix</code></td>
+<td><code>np.ndarray</code></td>
+<td>N matrix, shape (n_species × n_reactions)</td>
+</tr>
+<tr>
+<td><code>n_species</code></td>
+<td><code>int</code></td>
+<td>Number of distinct species</td>
+</tr>
+<tr>
+<td><code>n_complexes</code></td>
+<td><code>int</code></td>
+<td>Number of distinct complexes (<em>n</em> in deficiency formula)</td>
+</tr>
+<tr>
+<td><code>n_reactions</code></td>
+<td><code>int</code></td>
+<td>Total number of directed reactions</td>
+</tr>
+<tr>
+<td><code>n_linkage_classes</code></td>
+<td><code>int</code></td>
+<td>Number of weakly connected components (<em>l</em>)</td>
+</tr>
+<tr>
+<td><code>deficiency</code></td>
+<td><code>int</code></td>
+<td>δ = n − l − rank(N)</td>
+</tr>
+<tr>
+<td><code>is_weakly_reversible</code></td>
+<td><code>bool</code></td>
+<td>Every WCC is strongly connected</td>
+</tr>
+<tr>
+<td><code>conservation_laws</code></td>
+<td><code>list[sympy.Expr]</code></td>
+<td>Left null space of N; non-negative integer coefficients</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="methods">Methods</h4>
+<h5 id="crnt_summary-str"><code>crnt_summary() → str</code></h5>
+<p>Returns a human-readable structural analysis report including deficiency, theorem applicability, and conservation laws.</p>
+<hr />
+<h5 id="rate_keys-liststr"><code>rate_keys() → list[str]</code></h5>
+<p>Returns the canonical form of every rate key in the network. Use this to debug a <code>rates=</code> dictionary — if your key is not in this list (after normalization), the rate will silently default to zero.</p>
+<pre><code class="language-python">print(rn.rate_keys())
+# ['E + S -&gt; ES', 'ES -&gt; E + S', 'ES -&gt; E + P']
+</code></pre>
+<hr />
+<h5 id="odesnumeric_ratestrue-dictstr-sympyexpr"><code>odes(numeric_rates=True) → dict[str, sympy.Expr]</code></h5>
+<p>Returns mass-action ODEs as SymPy expressions keyed by species name.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>numeric_rates</code></td>
+<td><code>True</code></td>
+<td>If True, substitute numerical rate values. If False, leave symbolic <code>k_1</code>, <code>k_2</code>, …</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h5 id="jacobian-sympymatrix"><code>jacobian() → sympy.Matrix</code></h5>
+<p>Returns the symbolic Jacobian ∂f/∂x (n_species × n_species). Cached after first call. Rate symbols are left symbolic; use <code>jacobian_at()</code> for a fully evaluated matrix.</p>
+<hr />
+<h5 id="jacobian_atss-sympymatrix"><code>jacobian_at(ss) → sympy.Matrix</code></h5>
+<p>Returns the Jacobian with both rate constants and species concentrations substituted.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ss</code></td>
+<td><code>dict[str, float]</code></td>
+<td>Steady-state concentrations (e.g. <code>ss_obj.concentrations</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h5 id="steady_statesinitial_conditions-n_attempts50-seednone-liststeadystate"><code>steady_states(initial_conditions, n_attempts=50, seed=None) → list[SteadyState]</code></h5>
+<p>Finds steady states consistent with the conservation law totals implied by <code>initial_conditions</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>initial_conditions</code></td>
+<td><em>(required)</em></td>
+<td><code>dict[str, float]</code> — initial concentrations; missing species default to 0</td>
+</tr>
+<tr>
+<td><code>n_attempts</code></td>
+<td><code>50</code></td>
+<td>Total solver attempts. Increase for thorough multistability search</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><code>None</code></td>
+<td>Integer seed for reproducibility</td>
+</tr>
+</tbody>
+</table>
+<p>Returns a <code>list[SteadyState]</code>, possibly empty if no physical steady state was found.</p>
+<hr />
+<h5 id="bifurcationparameter-range-n_points100-initial_conditionsnone-plotfalse-bifurcationresult"><code>bifurcation(parameter, range, n_points=100, initial_conditions=None, plot=False) → BifurcationResult</code></h5>
+<p>Scans one rate constant over a log-spaced range.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parameter</code></td>
+<td><em>(required)</em></td>
+<td>Rate key string (will be normalized)</td>
+</tr>
+<tr>
+<td><code>range</code></td>
+<td><em>(required)</em></td>
+<td><code>(min, max)</code> tuple — endpoints of the scan</td>
+</tr>
+<tr>
+<td><code>n_points</code></td>
+<td><code>100</code></td>
+<td>Number of parameter values</td>
+</tr>
+<tr>
+<td><code>initial_conditions</code></td>
+<td><code>None</code></td>
+<td>Starting concentrations for each scan point</td>
+</tr>
+<tr>
+<td><code>plot</code></td>
+<td><code>False</code></td>
+<td>If True, show a bifurcation plot immediately</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h5 id="drawaxnone-layoutspring-matplotlibaxesaxes"><code>draw(ax=None, layout='spring') → matplotlib.axes.Axes</code></h5>
+<p>Draws the complex reaction graph using NetworkX and Matplotlib.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ax</code></td>
+<td><code>None</code></td>
+<td>Existing Axes to draw into; creates a new figure if None</td>
+</tr>
+<tr>
+<td><code>layout</code></td>
+<td><code>"spring"</code></td>
+<td>Graph layout algorithm: <code>"spring"</code>, <code>"shell"</code>, <code>"spectral"</code>, <code>"planar"</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="steadystate"><code>SteadyState</code></h3>
+<pre><code class="language-python">@dataclass
+class SteadyState:
+    concentrations: dict[str, float]  # species → concentration (M)
+    eigenvalues:    np.ndarray         # complex eigenvalues of Jacobian at this SS
+    is_stable:      bool               # all significant Re(λ) &lt; 0
+    is_oscillatory: bool               # any significant λ has Im ≠ 0 and Re &lt; 0
+    residual:       float              # ‖f(x*)‖₂ — how well the SS condition is satisfied
+</code></pre>
+<p><strong>Eigenvalue filtering:</strong> eigenvalues with <code>|λ| &lt; 1e-4 · max|λ|</code> are treated as zero (arising from conservation law dimensions) and excluded from the stability classification.</p>
+<hr />
+<h3 id="bifurcationresult"><code>BifurcationResult</code></h3>
+<pre><code class="language-python">@dataclass
+class BifurcationResult:
+    parameter_name:   str                    # canonical rate key
+    parameter_values: np.ndarray             # shape (n_points,)
+    steady_states:    list[list[SteadyState]] # outer: parameter values; inner: SS at each
+</code></pre>
+<p>Iterate over it directly:</p>
+<pre><code class="language-python">for pval, ss_list in zip(result.parameter_values, result.steady_states):
+    for ss in ss_list:
+        print(pval, ss.concentrations[&quot;B&quot;], ss.is_stable)
+</code></pre>
+<hr />
+<h3 id="crntresult"><code>CRNTResult</code></h3>
+<p>Returned by <code>rn._crnt_result</code>. Contains all raw CRNT metrics.</p>
+<pre><code class="language-python">result.n_species              # int
+result.n_complexes            # int
+result.n_reactions            # int
+result.n_linkage_classes      # int
+result.rank_N                 # int
+result.deficiency             # int
+result.is_weakly_reversible   # bool
+result.deficiency_zero_applies  # bool
+result.deficiency_one_applies   # bool
+</code></pre>
+<hr />
+<h2 id="examples">Examples</h2>
+<p>All examples are in the <code>examples/</code> directory and can be run directly:</p>
+<pre><code class="language-bash">python examples/01_simple_reversible.py
+python examples/02_michaelis_menten.py
+python examples/03_brusselator.py
+python examples/04_cha_cascade.py    # ~2 min; saves cha_bifurcation.png
+</code></pre>
+<h3 id="01_simple_reversiblepy-a-b"><code>01_simple_reversible.py</code> — A ⇌ B</h3>
+<p>The simplest possible network: one reversible reaction. Demonstrates δ = 0, DZT applies, and verifies the analytic steady state A* = k_r / (k_f + k_r) · (A₀ + B₀).</p>
+<h3 id="02_michaelis_mentenpy-enzyme-kinetics"><code>02_michaelis_menten.py</code> — Enzyme kinetics</h3>
+<p>E + S ⇌ ES → E + P. Demonstrates a network with δ = 0 that is <em>not</em> weakly reversible (DZT does not apply). Shows enzyme conservation E + ES = const and validates against the quasi-steady-state approximation.</p>
+<h3 id="03_brusselatorpy-nonlinear-open-system"><code>03_brusselator.py</code> — Nonlinear open system</h3>
+<p>A four-reaction network with a cubic nonlinearity. With all species treated as dynamic (not chemostatted), δ = 0. Shows symbolic ODE generation for a network with higher-order kinetics.</p>
+<h3 id="04_cha_cascadepy-cha-mir-21-biosensor-full-demo"><code>04_cha_cascade.py</code> — CHA miR-21 biosensor (full demo)</h3>
+<p>The primary validation case. Demonstrates the full workflow:
+1. Structural analysis: δ = 1, Deficiency One Theorem applies
+2. Four conservation laws
+3. Symbolic ODEs for all 7 species
+4. Steady-state finding at [miR-21]₀ = 10 nM → H1H2_CP ≈ 0.34 nM
+5. Eigenvalue analysis confirming stability
+6. Bifurcation scan across three orders of magnitude of [miR-21]
+7. Reaction graph visualization</p>
+<p><img alt="CHA signal vs miR-21 concentration" src="examples/cha_bifurcation.png" /></p>
+<p><em>Figure 1. Steady-state signal [H1H2_CP]</em> as a function of initial [miR-21] (0.1–100 nM). The single-valued, monotone curve is consistent with the D1T uniqueness guarantee.*</p>
+<h3 id="05_brusselator_chemostattedpy-brusselator-with-chemostatted-species"><code>05_brusselator_chemostatted.py</code> — Brusselator with chemostatted species</h3>
+<p>Shows that when A and B are held fixed (continuously replenished), the reduced 2D (X, Y) subsystem undergoes a Hopf bifurcation and sustains limit-cycle oscillations for B &gt; 1 + A². Demonstrates the chemostatted ODE wrapper pattern: pin selected species by zeroing their derivatives. Includes both the oscillatory case (B=3) and the stable-spiral contrast case (B=1.5).</p>
+<h3 id="06_goldbeter_koshlandpy-goldbeter-koshland-switch-literature-validation"><code>06_goldbeter_koshland.py</code> — Goldbeter-Koshland switch (literature validation)</h3>
+<p>Validates mantis-delta against the published GK result (PNAS 1981). The full mass-action mechanism (kinase + phosphatase arms) has δ=1, satisfies D1T → at most one SS per stoichiometry class → bistability is structurally impossible. Numerically confirms: (1) exactly one SS found across a 400× scan of kinase/phosphatase ratio, (2) fractional activation matches the GK QSS formula to within 1%, (3) effective Hill coefficient ≈ 2250 at Wt/Km = 9000.</p>
+<hr />
+<h2 id="running-the-tests">Running the tests</h2>
+<pre><code class="language-bash">cd mantis-delta
+pip install -e .
+pytest tests/ -v
+</code></pre>
+<p>The test suite has 80 tests across six files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Tests</th>
+<th>What is covered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_parsing.py</code></td>
+<td>11</td>
+<td>Complex parsing, reversible/irreversible syntax, rate key normalization, error handling</td>
+</tr>
+<tr>
+<td><code>test_crnt.py</code></td>
+<td>17</td>
+<td>Deficiency and theorem checks for A↔B, Michaelis-Menten, Brusselator, and CHA</td>
+</tr>
+<tr>
+<td><code>test_symbolic.py</code></td>
+<td>6</td>
+<td>ODE form, Jacobian entries, numeric substitution, CHA mass balance</td>
+</tr>
+<tr>
+<td><code>test_analysis.py</code></td>
+<td>8</td>
+<td>A↔B analytic SS, MM enzyme conservation, CHA non-negativity / conservation / signal / stability</td>
+</tr>
+<tr>
+<td><code>test_cha.py</code></td>
+<td>18</td>
+<td>End-to-end integration: all structural properties, conservation laws, CRNT summary strings, SS attributes</td>
+</tr>
+<tr>
+<td><code>test_gk_switch.py</code></td>
+<td>20</td>
+<td>Goldbeter-Koshland switch: CRNT analysis (δ=1, D1T), conservation laws, symmetric SS, monostability scan</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="steady_states-returns-an-empty-list"><code>steady_states()</code> returns an empty list</h3>
+<ol>
+<li><strong>Check <code>rate_keys()</code></strong> — if a rate constant was not recognized, it silently defaults to zero and the ODE may be degenerate.
+   <code>python
+   print(rn.rate_keys())          # canonical forms
+   print(rn._rates)               # what was actually stored after normalization</code></li>
+<li><strong>Increase <code>n_attempts</code></strong> — the default of 50 is usually sufficient, but stiff or highly multistable networks may need more.</li>
+<li><strong>Check initial conditions</strong> — if a species is missing from <code>ic</code>, its initial concentration defaults to zero. If that zeroes out a conservation law total, the solver is constrained to the zero manifold.</li>
+</ol>
+<h3 id="rate-constant-is-not-being-used">Rate constant is not being used</h3>
+<p>The <code>rates</code> dictionary keys are normalized by sorting species alphabetically on each side of the arrow. If your key has species in a different order <em>and</em> does not match after normalization, it will be silently ignored. Always verify with <code>rn.rate_keys()</code>.</p>
+<h3 id="rnodes-shows-0-for-some-species"><code>rn.odes()</code> shows <code>0</code> for some species</h3>
+<p>The rate for one or more reactions is zero (see above). Call <code>rn._rates</code> to inspect what was stored.</p>
+<h3 id="import-error-modulenotfounderror-no-module-named-mantis">Import error: <code>ModuleNotFoundError: No module named 'mantis'</code></h3>
+<p>If you cloned from source, make sure you installed in editable mode <strong>from inside the <code>mantis/</code> subdirectory</strong>:</p>
+<pre><code class="language-bash">cd /path/to/hairpin/mantis   # must be the subdirectory containing pyproject.toml
+pip install -e .
+</code></pre>
+<p>Running <code>pip install -e .</code> from the parent directory (<code>hairpin/</code>) will not work because the outer <code>mantis/</code> directory is found as a namespace package and shadows the installed package.</p>
+<h3 id="steady-state-has-residual-1e-4">Steady state has <code>residual &gt; 1e-4</code></h3>
+<p>The solver did not converge tightly. This can happen in very stiff systems or when the initial guess is far from any steady state. Try:
+- Increasing <code>n_attempts</code>
+- Providing initial conditions closer to the expected steady state
+- Checking that all rate constants are physically plausible (e.g. not mixing M⁻¹s⁻¹ and s⁻¹ units without appropriate scaling)</p>
+<hr />
+<h2 id="background-and-theory">Background and theory</h2>
+<p>mantis-delta implements the mathematical framework of Feinberg's Chemical Reaction Network Theory. The key references are:</p>
+<ul>
+<li><strong>Horn F, Jackson R</strong> (1972). General mass action kinetics. <em>Arch. Rational Mech. Anal.</em> 47, 81–116.</li>
+<li><strong>Feinberg M</strong> (1979). <em>Lectures on Chemical Reaction Networks.</em> University of Wisconsin, Madison. Available at <a href="https://crnt.osu.edu">crnt.osu.edu</a>.</li>
+<li><strong>Feinberg M</strong> (1995). The existence and uniqueness of steady states for a class of chemical reaction networks. <em>Arch. Rational Mech. Anal.</em> 132, 311–370.</li>
+<li><strong>Feinberg M</strong> (2019). <em>Foundations of Chemical Reaction Network Theory.</em> Springer.</li>
+</ul>
+<h3 id="the-cha-mir-21-network">The CHA miR-21 network</h3>
+<p>The Catalytic Hairpin Assembly (CHA) cascade is a DNA nanotechnology circuit in which a microRNA target (miR-21) catalytically drives the formation of a double-stranded reporter complex. The four-reaction network is:</p>
+<pre><code>miR21 + H1 ⇌ miR21_H1           (toehold binding / dissociation)
+miR21_H1 + H2 ⇌ H1H2 + miR21   (strand displacement / catalyst release)
+H1H2 + CP ⇌ H1H2_CP             (capture probe binding)
+H1 + H2 ⇌ H1H2                  (leakage / background dimerization)
+</code></pre>
+<p>This network has n = 8 complexes, l = 4 linkage classes, and rank(N) = 3, giving δ = 1. It is weakly reversible. The Deficiency One Theorem therefore guarantees at most one steady state per stoichiometry class for any positive rate constants, which is verified numerically in <code>examples/04_cha_cascade.py</code>.</p>
+<p>Rate constants were derived from NUPACK thermodynamic simulations at 37 °C in physiological salt (137 mM NaCl, 10 mM MgCl₂).</p>
+<hr />
+<h2 id="citation">Citation</h2>
+<p>If you use mantis-delta in published work, please cite:</p>
+<pre><code class="language-bibtex">@software{venegas2026mantis_delta,
+  author  = {Venegas, Emilio},
+  title   = {mantis-delta: Mass-Action Network Theory, Inference, and Stability},
+  year    = {2026},
+  url     = {https://github.com/emiliovenegas/mantis-delta},
+  version = {0.1.0}
+}
+</code></pre>
+<hr />
+<h2 id="license">License</h2>
+<p>MIT © 2026 Emilio Venegas</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.sections", "navigation.top"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
