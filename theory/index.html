@@ -1,0 +1,1504 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://emiliovenegas.github.io/mantis-delta/theory/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../advanced/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Theory & worked examples - mantis-delta</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mantis-delta-mathematical-background-worked-calculations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mantis-delta" class="md-header__button md-logo" aria-label="mantis-delta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mantis-delta
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Theory & worked examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/emiliovenegas/mantis-delta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    emiliovenegas/mantis-delta
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mantis-delta" class="md-nav__button md-logo" aria-label="mantis-delta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    mantis-delta
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/emiliovenegas/mantis-delta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    emiliovenegas/mantis-delta
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & worked examples
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & worked examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-notation-and-the-reaction-network-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Notation and the reaction-network object
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-the-stoichiometry-matrix-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. The stoichiometry matrix N
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-mass-action-kinetics-from-reactions-to-odes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Mass-action kinetics: from reactions to ODEs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-worked-example-i-a-b-end-to-end" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Worked example I — A ⇌ B end to end
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-conservation-laws-as-the-left-null-space-of-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Conservation laws as the left null space of N
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-worked-example-ii-michaelismenten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Worked example II — Michaelis–Menten
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deficiency-and-the-feinberg-theorems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Deficiency and the Feinberg theorems
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Deficiency and the Feinberg theorems">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-zero-theorem-hornjackson-1972-feinberg-1979" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency Zero Theorem (Horn–Jackson 1972; Feinberg 1979)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-one-theorem-feinberg-1995" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency One Theorem (Feinberg 1995)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-worked-example-iii-the-cha-cascade-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Worked example III — the CHA cascade (δ = 1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-chemostatting-folding-fixed-concentrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Chemostatting: folding fixed concentrations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-worked-example-iv-brusselator-the-hopf-bifurcation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Worked example IV — Brusselator &amp; the Hopf bifurcation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-how-the-steady-state-solver-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. How the steady-state solver works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. How the steady-state solver works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#closed-semi-open-networks-have-conservation-laws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Closed / semi-open networks (have conservation laws)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-chemostatted-networks-no-conservation-laws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open / chemostatted networks (no conservation laws)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-the-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering the results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-stability-classification-from-the-jacobian-spectrum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Stability classification from the Jacobian spectrum
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-stochastic-kinetics-propensities-and-the-leap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Stochastic kinetics: propensities and the τ-leap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Stochastic kinetics: propensities and the τ-leap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-rate-constant-to-stochastic-propensity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From rate constant to stochastic propensity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exact-ssa-stochastic_simulate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exact SSA — stochastic_simulate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approximate-leap-tau_leap_simulate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approximate τ-leap — tau_leap_simulate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-notation-and-the-reaction-network-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Notation and the reaction-network object
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-the-stoichiometry-matrix-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. The stoichiometry matrix N
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-mass-action-kinetics-from-reactions-to-odes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Mass-action kinetics: from reactions to ODEs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-worked-example-i-a-b-end-to-end" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Worked example I — A ⇌ B end to end
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-conservation-laws-as-the-left-null-space-of-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Conservation laws as the left null space of N
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-worked-example-ii-michaelismenten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Worked example II — Michaelis–Menten
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deficiency-and-the-feinberg-theorems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Deficiency and the Feinberg theorems
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Deficiency and the Feinberg theorems">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-zero-theorem-hornjackson-1972-feinberg-1979" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency Zero Theorem (Horn–Jackson 1972; Feinberg 1979)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deficiency-one-theorem-feinberg-1995" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deficiency One Theorem (Feinberg 1995)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-worked-example-iii-the-cha-cascade-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Worked example III — the CHA cascade (δ = 1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-chemostatting-folding-fixed-concentrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Chemostatting: folding fixed concentrations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-worked-example-iv-brusselator-the-hopf-bifurcation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Worked example IV — Brusselator &amp; the Hopf bifurcation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-how-the-steady-state-solver-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. How the steady-state solver works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. How the steady-state solver works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#closed-semi-open-networks-have-conservation-laws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Closed / semi-open networks (have conservation laws)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-chemostatted-networks-no-conservation-laws" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open / chemostatted networks (no conservation laws)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-the-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering the results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-stability-classification-from-the-jacobian-spectrum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Stability classification from the Jacobian spectrum
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-stochastic-kinetics-propensities-and-the-leap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Stochastic kinetics: propensities and the τ-leap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Stochastic kinetics: propensities and the τ-leap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-rate-constant-to-stochastic-propensity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From rate constant to stochastic propensity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exact-ssa-stochastic_simulate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exact SSA — stochastic_simulate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approximate-leap-tau_leap_simulate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approximate τ-leap — tau_leap_simulate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="mantis-delta-mathematical-background-worked-calculations">mantis-delta — Mathematical background &amp; worked calculations</h1>
+<p>This document is the mathematical companion to the <a href="../README.md">README</a>. It explains
+<em>what</em> mantis-delta computes and <em>how</em>, with worked numerical examples you can reproduce
+line-by-line. Every matrix, steady state, and eigenvalue printed here is generated by the
+library itself (the exact code snippets are shown alongside).</p>
+<p><strong>Contents</strong></p>
+<ol>
+<li><a href="#1-notation-and-the-reaction-network-object">Notation and the reaction-network object</a></li>
+<li><a href="#2-the-stoichiometry-matrix-n">The stoichiometry matrix <em>N</em></a></li>
+<li><a href="#3-mass-action-kinetics-from-reactions-to-odes">Mass-action kinetics: from reactions to ODEs</a></li>
+<li><a href="#4-worked-example-i--a--b-end-to-end">Worked example I — A ⇌ B end to end</a></li>
+<li><a href="#5-conservation-laws-as-the-left-null-space-of-n">Conservation laws as the left null space of <em>N</em></a></li>
+<li><a href="#6-worked-example-ii--michaelismenten">Worked example II — Michaelis–Menten</a></li>
+<li><a href="#7-deficiency-and-the-feinberg-theorems">Deficiency and the Feinberg theorems</a></li>
+<li><a href="#8-worked-example-iii--the-cha-cascade--1">Worked example III — the CHA cascade (δ = 1)</a></li>
+<li><a href="#9-chemostatting-folding-fixed-concentrations">Chemostatting: folding fixed concentrations</a></li>
+<li><a href="#10-worked-example-iv--brusselator--the-hopf-bifurcation">Worked example IV — Brusselator &amp; the Hopf bifurcation</a></li>
+<li><a href="#11-how-the-steady-state-solver-works">How the steady-state solver works</a></li>
+<li><a href="#12-stability-classification-from-the-jacobian-spectrum">Stability classification from the Jacobian spectrum</a></li>
+<li><a href="#13-stochastic-kinetics-propensities-and-the-leap">Stochastic kinetics: propensities and the τ-leap</a></li>
+<li><a href="#14-references">References</a></li>
+</ol>
+<hr />
+<h2 id="1-notation-and-the-reaction-network-object">1. Notation and the reaction-network object</h2>
+<p>A chemical reaction network is a triple of finite sets <strong>(𝒮, 𝒞, ℛ)</strong>:</p>
+<ul>
+<li><strong>Species</strong> 𝒮 = {X₁, …, X_d} — the molecular entities whose concentrations evolve.
+  In code these are <code>rn.species</code>, sorted alphabetically, and <em>d</em> = <code>rn.n_species</code>.</li>
+<li><strong>Complexes</strong> 𝒞 — the multisets of species standing on either side of a reaction
+  arrow. The complex <code>2X + Y</code> is the formal object <code>{(X,2),(Y,1)}</code>; the empty complex ∅
+  is allowed. <em>n</em> = <code>rn.n_complexes</code> is the number of <strong>distinct</strong> complexes.</li>
+<li><strong>Reactions</strong> ℛ ⊆ 𝒞 × 𝒞 — directed arrows yᵢ → yⱼ between complexes. A reversible
+  string <code>A &lt;-&gt; B</code> is stored as <strong>two</strong> directed reactions. <em>r</em> = <code>rn.n_reactions</code>.</li>
+</ul>
+<p>Each complex <code>y</code> is a vector in concentration space ℝ^d: <code>y = Σ νₛ eₛ</code> where νₛ is the
+stoichiometric coefficient of species <em>s</em> in that complex. A reaction yᵢ → yⱼ has an
+associated <strong>reaction vector</strong> (yⱼ − yᵢ) ∈ ℝ^d — the net molecular change it produces.</p>
+<blockquote>
+<p><strong>Why complexes are the fundamental node type.</strong> mantis-delta builds a directed graph
+whose <strong>nodes are complexes</strong> and whose <strong>edges are reactions</strong> (<code>rn.draw()</code> renders
+exactly this graph). Deficiency, linkage classes, and weak reversibility are all
+properties of this graph — not of the species or of the reactions individually. This is
+the central modelling choice of Chemical Reaction Network Theory (CRNT).</p>
+</blockquote>
+<hr />
+<h2 id="2-the-stoichiometry-matrix-n">2. The stoichiometry matrix <em>N</em></h2>
+<p>The <strong>stoichiometry matrix</strong> <code>N</code> collects every reaction vector as a column:</p>
+<pre><code>N[i, j]  =  (coeff of species i in products of reaction j)
+          − (coeff of species i in reactants of reaction j)
+</code></pre>
+<p>so <code>N</code> has shape <em>(d species × r reactions)</em> — <code>rn.stoichiometry_matrix</code>. This is the
+opposite of some textbooks that use the transpose; mantis-delta keeps species on the rows
+so the mass-action ODE reads as a clean matrix–vector product (next section).</p>
+<p>The <strong>stoichiometric subspace</strong> is <em>S</em> = span(columns of <code>N</code>) = image of <code>N</code>. Its
+dimension <em>s</em> = rank(<code>N</code>) is the number of <em>independent</em> directions the state can move in.
+Everything orthogonal to <em>S</em> is conserved — that is the whole content of §5.</p>
+<p><code>build_stoichiometry_matrix</code> (in <code>stoichiometry.py</code>) is a direct transcription of the
+formula above: it walks each reaction, subtracts reactant coefficients and adds product
+coefficients into the relevant row. Species not in the dynamic list (e.g. chemostatted
+ones, §9) simply have no row.</p>
+<hr />
+<h2 id="3-mass-action-kinetics-from-reactions-to-odes">3. Mass-action kinetics: from reactions to ODEs</h2>
+<p>Under the <strong>law of mass action</strong>, the rate (flux) of reaction <em>j</em> is its rate constant
+times the product of reactant concentrations raised to their stoichiometric coefficients:</p>
+<pre><code>v_j(x)  =  k_j · Π_s  x_s^(ν_{s,j})
+</code></pre>
+<p>where ν_{s,j} is the coefficient of species <em>s</em> in the <strong>reactant</strong> complex of reaction
+<em>j</em>. Stacking the fluxes into a vector <strong>v(x)</strong> ∈ ℝ^r, the full dynamics are</p>
+<pre><code>dx/dt  =  N · v(x)
+</code></pre>
+<p>This single equation is what <code>odes()</code> assembles symbolically (via SymPy) and what
+<code>simulate()</code> / the steady-state solver evaluate numerically. Concretely,
+<code>build_odes</code> computes, for each species <em>i</em>,</p>
+<pre><code>d x_i / dt  =  Σ_j  N[i, j] · v_j(x)
+</code></pre>
+<p>and <code>sympy.expand</code>s the result. With <code>numeric_rates=False</code> the rate constants stay as
+symbols <code>k_1, k_2, …</code> (numbered in reaction order); with <code>numeric_rates=True</code> (the
+default) the supplied float values are substituted in.</p>
+<p>The <strong>Jacobian</strong> is <code>J(x) = ∂(N v)/∂x</code>. Symbolically it is just
+<code>sympy.diff</code> of each ODE w.r.t. each species (<code>jacobian()</code>); numerically the solver uses
+the closed-form product rule in <code>_full_jacobian_fn</code>, accumulating
+<code>J[:, k] += N[:, j] · ∂v_j/∂x_k</code> reaction by reaction. Stability is read off the
+eigenvalues of <code>J</code> evaluated at a steady state (§12).</p>
+<hr />
+<h2 id="4-worked-example-i-a-b-end-to-end">4. Worked example I — A ⇌ B end to end</h2>
+<p>The smallest non-trivial network. One reversible reaction → two directed reactions.</p>
+<pre><code class="language-python">from mantis import CRNetwork
+rn = CRNetwork.from_string([&quot;A &lt;-&gt; B&quot;], rates={&quot;A -&gt; B&quot;: 1.0, &quot;B -&gt; A&quot;: 0.5})
+</code></pre>
+<p><strong>Reaction order and rate symbols.</strong> <code>rn.rate_keys()</code> → <code>['A -&gt; B', 'B -&gt; A']</code>, so
+k₁ = 1.0 (forward) and k₂ = 0.5 (back).</p>
+<p><strong>Stoichiometry matrix.</strong> Species are <code>['A', 'B']</code>; reactions are <code>[A→B, B→A]</code>:</p>
+<pre><code>N =  [[-1.  1.]      row A:  −1 (consumed in A→B),  +1 (produced in B→A)
+      [ 1. -1.]]     row B:  +1 (produced in A→B),  −1 (consumed in B→A)
+</code></pre>
+<p>rank(<code>N</code>) = 1 (the two columns are negatives of each other), so <em>s</em> = 1.</p>
+<p><strong>Fluxes and ODEs.</strong> v₁ = k₁·A = A, v₂ = k₂·B = 0.5 B. Then</p>
+<pre><code>dA/dt = −v₁ + v₂ = −1.0·A + 0.5·B
+dB/dt = +v₁ − v₂ = +1.0·A − 0.5·B
+</code></pre>
+<p>exactly what <code>rn.odes()</code> returns: <code>{'A': -1.0*A + 0.5*B, 'B': 1.0*A - 0.5*B}</code>.</p>
+<p><strong>Conservation law.</strong> Since dA/dt = −dB/dt, the total A + B is constant — this is the one
+conservation law (<code>rn.conservation_laws</code> → <code>[A + B]</code>), and it is why rank(<code>N</code>) = 1 &lt; 2.</p>
+<p><strong>Steady state.</strong> Setting dA/dt = 0 gives A<em> = (k₂/k₁)·B</em>, i.e. A<em>/B</em> = 0.5. Combined with
+the conserved total A + B = A₀ + B₀ = 2 (from the initial condition <code>{A:2, B:0}</code>):</p>
+<pre><code>A* = k₂/(k₁+k₂) · (A₀+B₀) = 0.5/1.5 · 2 = 0.6667
+B* = k₁/(k₁+k₂) · (A₀+B₀) = 1.0/1.5 · 2 = 1.3333
+</code></pre>
+<pre><code class="language-python">ss = rn.steady_states({&quot;A&quot;: 2.0, &quot;B&quot;: 0.0})[0]
+ss.concentrations   # {'A': 0.6667, 'B': 1.3333}
+</code></pre>
+<p><strong>Jacobian and stability.</strong> For this linear system the Jacobian is constant:</p>
+<pre><code>J = [[−k₁,  k₂],     symbolic:  Matrix([[-k_1, k_2], [k_1, -k_2]])
+     [ k₁, −k₂]]     numeric :  Matrix([[-1.0, 0.5], [1.0, -0.5]])
+</code></pre>
+<p>Its eigenvalues are <strong>−(k₁+k₂) = −1.5</strong> and <strong>0</strong>. The zero eigenvalue is <em>not</em> a sign of
+instability — it is the conservation-law direction (motion along A+B = const is
+forbidden). mantis-delta filters it out (§12) and classifies the steady state as <strong>stable</strong>
+(<code>ss.is_stable == True</code>). This is the Deficiency Zero Theorem at work: δ = 2 − 1 − 1 = 0
+and the network is weakly reversible, so a unique asymptotically stable steady state is
+<em>guaranteed</em> for any positive k₁, k₂.</p>
+<hr />
+<h2 id="5-conservation-laws-as-the-left-null-space-of-n">5. Conservation laws as the left null space of <em>N</em></h2>
+<p>A <strong>conservation law</strong> is a vector <em>c</em> ∈ ℝ^d such that the linear combination <em>c·x</em> is
+constant along every trajectory:</p>
+<pre><code>d(c·x)/dt = c·(N v(x)) = (cᵀN) v(x) = 0  for all x   ⟺   cᵀ N = 0
+</code></pre>
+<p>So conservation laws are exactly the <strong>left null space of <code>N</code></strong> (equivalently the null
+space of <code>Nᵀ</code>). There are <code>d − s</code> independent ones.</p>
+<p>For a mass-balanced chemical network these always admit a basis with <strong>non-negative integer
+entries</strong> — the physical "moiety totals" (a conserved atom group, a conserved backbone,
+etc.). <code>conservation_laws_sympy</code> computes this in three steps:</p>
+<ol>
+<li><strong>Exact null space.</strong> Build <code>N</code> as an integer SymPy matrix and call <code>Nᵀ.nullspace()</code> —
+   exact rational arithmetic, no floating-point fuzz.</li>
+<li><strong>Clear denominators.</strong> <code>_scale_to_integers</code> multiplies each basis vector by the LCM of
+   its denominators and divides out the GCD, giving the smallest integer vector.</li>
+<li><strong>Non-negative, elementary form.</strong> <code>_make_nonneg_basis</code> adds/subtracts integer multiples
+   of the basis vectors to (a) eliminate negative entries and (b) minimise the number of
+   non-zeros, so the reported laws are the "most elementary" moiety totals.</li>
+</ol>
+<p>The result is returned as SymPy expressions, e.g. <code>E + ES</code> — read as "E + ES = const".</p>
+<blockquote>
+<p><strong>Conservation laws set the steady state.</strong> A closed network has one steady state <em>per
+stoichiometry class</em> — i.e. per choice of the conserved totals. Those totals are fixed by
+your initial conditions: starting from <code>{E: 1e-6, ES: 0}</code> pins <code>E + ES = 1e-6</code> forever, and
+a different total yields a different steady state. This is why <code>steady_states()</code> takes
+initial conditions rather than just rate constants.</p>
+</blockquote>
+<hr />
+<h2 id="6-worked-example-ii-michaelismenten">6. Worked example II — Michaelis–Menten</h2>
+<pre><code class="language-python">mm = CRNetwork.from_string([&quot;E + S &lt;-&gt; ES&quot;, &quot;ES -&gt; E + P&quot;])
+</code></pre>
+<p><strong>Species</strong> <code>['E', 'ES', 'P', 'S']</code>; <strong>rate keys</strong>
+<code>['E + S -&gt; ES', 'ES -&gt; E + S', 'ES -&gt; E + P']</code> (3 directed reactions).</p>
+<p><strong>Stoichiometry matrix</strong> (rows E, ES, P, S; columns = the 3 reactions):</p>
+<pre><code>       E+S→ES   ES→E+S   ES→E+P
+E   [   −1        +1       +1   ]
+ES  [   +1        −1       −1   ]
+P   [    0         0       +1   ]
+S   [   −1        +1        0   ]
+</code></pre>
+<p>rank(<code>N</code>) = 2, and d = 4, so there are <strong>4 − 2 = 2</strong> conservation laws:</p>
+<pre><code class="language-python">mm.conservation_laws    # [E + ES,  ES + P + S]
+</code></pre>
+<ul>
+<li><code>E + ES = const</code> — enzyme is recycled, never created or destroyed.</li>
+<li><code>ES + P + S = const</code> — total substrate-derived material is conserved.</li>
+</ul>
+<p><strong>Structural verdict.</strong> n = 3 complexes (<code>E+S</code>, <code>ES</code>, <code>E+P</code>), l = 1 linkage class,
+s = 2 ⟹ δ = 3 − 1 − 2 = <strong>0</strong>. But the network is <strong>not weakly reversible</strong> (the arrow
+<code>ES → E+P</code> has no return path), so the Deficiency Zero Theorem does <em>not</em> apply — a δ = 0
+network still needs weak reversibility for the DZT guarantee. mantis-delta reports exactly
+this in <code>crnt_summary()</code>. (Michaelis–Menten of course still has a well-behaved unique
+steady state — DZT being inapplicable means <em>the theorem</em> is silent, not that the network
+misbehaves.)</p>
+<hr />
+<h2 id="7-deficiency-and-the-feinberg-theorems">7. Deficiency and the Feinberg theorems</h2>
+<p>The <strong>deficiency</strong> of a network is the non-negative integer</p>
+<pre><code>δ = n − l − s
+</code></pre>
+<ul>
+<li><em>n</em> = number of distinct complexes (<code>n_complexes</code>)</li>
+<li><em>l</em> = number of linkage classes = weakly-connected components of the complex graph
+  (<code>n_linkage_classes</code>)</li>
+<li><em>s</em> = rank(<code>N</code>) = dim of the stoichiometric subspace</li>
+</ul>
+<p><code>compute_deficiency</code> is literally <code>n - l - rank_N</code>. Deficiency measures how far the
+network's <em>complex-space</em> geometry is from its <em>stoichiometric</em> geometry — the slack between
+the way complexes are linked in the graph and the dimension actually spanned by the reaction
+vectors. It is always ≥ 0, and it is a property of the <strong>graph plus stoichiometry</strong>,
+independent of the rate constants.</p>
+<p><strong>Linkage classes.</strong> Two complexes are in the same linkage class if they are connected in
+the <em>undirected</em> version of the complex graph. <code>get_linkage_classes</code> returns
+<code>networkx.weakly_connected_components</code>.</p>
+<p><strong>Weak reversibility.</strong> Every weakly-connected component must also be <em>strongly</em> connected:
+if you can get from complex <em>y</em> to <em>y′</em> following arrows, you must be able to get back (not
+necessarily by a single reaction). <code>check_weak_reversibility</code> tests
+<code>is_strongly_connected</code> on each weakly-connected subgraph.</p>
+<h3 id="deficiency-zero-theorem-hornjackson-1972-feinberg-1979">Deficiency Zero Theorem (Horn–Jackson 1972; Feinberg 1979)</h3>
+<blockquote>
+<p>If <strong>δ = 0</strong> <em>and</em> the network is <strong>weakly reversible</strong>, then for <strong>every</strong> choice of
+positive rate constants the mass-action system has exactly <strong>one</strong> positive steady state
+in each stoichiometry class, that steady state is <strong>asymptotically stable</strong>, and there are
+<strong>no</strong> periodic orbits. No bistability, no oscillations — structurally ruled out.</p>
+</blockquote>
+<p><code>deficiency_zero_applies = (δ == 0 and weakly_reversible)</code>.</p>
+<h3 id="deficiency-one-theorem-feinberg-1995">Deficiency One Theorem (Feinberg 1995)</h3>
+<p>mantis-delta checks the structural hypotheses in <code>check_deficiency_one_theorem</code>:</p>
+<ol>
+<li>δ = 1, <strong>and</strong></li>
+<li>each linkage class has its own deficiency δ_ℓ ∈ {0, 1}, <strong>and</strong></li>
+<li>at most one linkage class has δ_ℓ = 1.</li>
+</ol>
+<p>The per-linkage-class deficiency δ_ℓ = (n_ℓ − 1 − s_ℓ) is computed by <code>_per_lc_deficiency</code>,
+restricting <code>N</code> to the reactions and species of that linkage class and taking the rank.
+When the hypotheses hold:</p>
+<blockquote>
+<p>the mass-action system admits <strong>at most one</strong> steady state per stoichiometry class for any
+positive rate constants — so <strong>bistability is structurally impossible</strong>, even though
+stability and oscillations are not constrained by this theorem alone.</p>
+</blockquote>
+<p><code>deficiency_one_applies</code> is the boolean returned by that check.</p>
+<hr />
+<h2 id="8-worked-example-iii-the-cha-cascade-1">8. Worked example III — the CHA cascade (δ = 1)</h2>
+<p>The Catalytic Hairpin Assembly biosensor — the library's primary validation case:</p>
+<pre><code class="language-python">cha = CRNetwork.from_string([
+    &quot;miR21 + H1 &lt;-&gt; miR21_H1&quot;,          # toehold binding
+    &quot;miR21_H1 + H2 &lt;-&gt; H1H2 + miR21&quot;,   # strand displacement, catalyst release
+    &quot;H1H2 + CP &lt;-&gt; H1H2_CP&quot;,            # capture-probe / reporter formation
+    &quot;H1 + H2 &lt;-&gt; H1H2&quot;,                 # leakage dimerisation
+])
+</code></pre>
+<p><strong>Counting for the deficiency.</strong> The eight distinct complexes are</p>
+<pre><code>miR21+H1,  miR21_H1,  miR21_H1+H2,  H1H2+miR21,  H1H2+CP,  H1H2_CP,  H1+H2,  H1H2
+</code></pre>
+<p>so <strong>n = 8</strong>. All eight are <em>distinct</em> complex nodes — even though <code>H1H2</code> recurs as a
+sub-term, the complexes <code>H1H2 + miR21</code>, <code>H1H2 + CP</code>, and <code>H1H2</code> are three different nodes —
+so no two reactions share a node and the four reversible reactions form <strong>l = 4</strong>
+independent linkage classes (one two-complex component each). The stoichiometric subspace
+has rank <strong>s = 3</strong>. Therefore</p>
+<pre><code>δ = n − l − s = 8 − 4 − 3 = 1
+</code></pre>
+<p>The network is weakly reversible (every reaction is written <code>&lt;-&gt;</code>). The structural check
+finds δ = 1 with admissible per-linkage-class deficiencies, so the <strong>Deficiency One
+Theorem applies</strong>:</p>
+<pre><code class="language-python">cha.n_complexes              # 8
+cha.n_linkage_classes        # 4
+cha.deficiency               # 1
+cha.is_weakly_reversible     # True
+cha._crnt_result.deficiency_one_applies   # True
+</code></pre>
+<p><strong>Four conservation laws</strong> (<code>cha.conservation_laws</code>):</p>
+<pre><code>CP + H1H2_CP                          # capture probe is conserved
+H1H2 + H1H2_CP + H2                   # H2 moiety total
+miR21 + miR21_H1                      # the miR-21 catalyst is conserved
+H1 + H1H2 + H1H2_CP + miR21_H1        # H1 moiety total
+</code></pre>
+<p>The miR-21 conservation law <code>miR21 + miR21_H1 = const</code> is the mathematical statement that
+the trigger acts <strong>catalytically</strong> — it is released by the displacement step and never
+consumed. The D1T guarantee (at most one steady state per stoichiometry class) is what
+makes the dose–response curve of <code>examples/04_cha_cascade.py</code> single-valued and monotone.</p>
+<hr />
+<h2 id="9-chemostatting-folding-fixed-concentrations">9. Chemostatting: folding fixed concentrations</h2>
+<p>An <strong>open</strong> network holds some species at fixed concentrations — fed by a reservoir, a
+large buffer, or a flow reactor. mantis-delta treats a chemostatted species not as a
+dynamic variable but as a <strong>parameter folded into the rate constants</strong>.</p>
+<p>If species <em>A</em> is chemostatted at concentration c_A and appears as a reactant with
+coefficient ν in reaction <em>j</em>, then its contribution <code>c_A^ν</code> is constant, so it is absorbed
+into an <strong>effective rate constant</strong>:</p>
+<pre><code>k_j^eff  =  k_j · Π_{A ∈ chemostatted}  c_A^(ν_{A,j})
+</code></pre>
+<p>This is exactly <code>fold_chemostatted_into_rates</code>. The consequences ripple through the whole
+library consistently:</p>
+<ul>
+<li><strong>Species list / <code>N</code></strong>: chemostatted species get no variable and no stoichiometry row —
+  the dynamic subsystem is genuinely smaller.</li>
+<li><strong>Deficiency, conservation laws</strong>: computed on the <em>reduced</em> complex graph (chemostatted
+  species are stripped from each complex via <code>reduce_complex</code> before the graph is built).</li>
+<li><strong>ODEs</strong>: only the dynamic species get equations; the folded <code>k^eff</code> carry the reservoir
+  concentrations as numeric prefactors.</li>
+<li><strong>Steady states</strong>: with chemostatting an open network typically has <strong>no conservation
+  laws</strong>, which changes the solver strategy entirely (§11) and is what lets it find
+  <em>unstable</em> fixed points.</li>
+</ul>
+<p>A chemostatted concentration of <code>0.0</code> makes the corresponding reaction a pure <strong>sink</strong>
+(zero flux) — the standard way the Brusselator's product-removal steps are written.</p>
+<hr />
+<h2 id="10-worked-example-iv-brusselator-the-hopf-bifurcation">10. Worked example IV — Brusselator &amp; the Hopf bifurcation</h2>
+<pre><code class="language-python">br = CRNetwork.from_string(
+    [&quot;A -&gt; X&quot;, &quot;2X + Y -&gt; 3X&quot;, &quot;B + X -&gt; Y + D&quot;, &quot;X -&gt; E&quot;],
+    rates={&quot;A -&gt; X&quot;: 1.0, &quot;2X + Y -&gt; 3X&quot;: 1.0, &quot;B + X -&gt; Y + D&quot;: 1.0, &quot;X -&gt; E&quot;: 1.0},
+    chemostatted={&quot;A&quot;: 1.0, &quot;B&quot;: 3.0, &quot;D&quot;: 0.0, &quot;E&quot;: 0.0},
+)
+</code></pre>
+<p>With A, B, D, E chemostatted, only <strong>X, Y</strong> are dynamic. Folding the fixed concentrations
+into the rates (k=1 throughout, A=1, B=3) gives the classic reduced system:</p>
+<pre><code>dX/dt = 1 − (B+1)·X + X²Y  =  1.0 − 4.0·X + X²·Y
+dY/dt =      B·X − X²Y      =        3.0·X − X²·Y
+</code></pre>
+<p>returned verbatim by <code>br.odes()</code>.</p>
+<p><strong>Fixed point.</strong> Setting both to zero: adding the equations gives 1 − X = 0 ⟹ X<em> = 1, then
+Y</em> = B/X<em> = 3. So (X</em>, Y<em>) = </em><em>(1, 3)</em>* — independent of where you start.</p>
+<p><strong>Jacobian and the Hopf condition.</strong> The symbolic Jacobian (with k's symbolic) is</p>
+<pre><code>J = [[2XY·k₂ − 3k₃ − k₄ ,  X²·k₂ ],
+     [ −2XY·k₂ + 3k₃     ,  −X²·k₂]]
+</code></pre>
+<p>Evaluated at (1, 3) with all k = 1, this is <code>[[2, 1], [−3, −1]]</code>, whose eigenvalues are</p>
+<pre><code>λ = 0.5 ± 0.866 j
+</code></pre>
+<pre><code class="language-python">ss = br.steady_states({&quot;X&quot;: 1.0, &quot;Y&quot;: 1.0})[0]
+ss.concentrations    # {'X': 1.0, 'Y': 3.0}
+ss.eigenvalues       # [0.5+0.866j, 0.5-0.866j]
+ss.is_stable         # False
+ss.is_oscillatory    # True   (complex eigenvalues)
+</code></pre>
+<p>Positive real part + non-zero imaginary part = an <strong>unstable focus</strong>: trajectories spiral
+<em>outward</em> and settle onto a <strong>limit cycle</strong>. The general Brusselator Hopf condition is
+B &gt; 1 + A² (here 3 &gt; 1 + 1² = 2 ✓). At B = 1.5 the same construction gives eigenvalues with
+<em>negative</em> real part — a stable spiral, <code>is_stable == True</code>, <code>is_oscillatory == True</code>.</p>
+<blockquote>
+<p><strong>Why an algebraic solver matters here.</strong> Forward ODE integration can never <em>land on</em> an
+unstable fixed point — it spirals away to the limit cycle. The fixed point (1, 3) is found
+only because the solver solves <code>N v(x) = 0</code> algebraically (§11). This is the headline
+capability of the open-network path: locating Hopf centres that simulation cannot reach.</p>
+</blockquote>
+<hr />
+<h2 id="11-how-the-steady-state-solver-works">11. How the steady-state solver works</h2>
+<p>A steady state solves <code>N v(x) = 0</code> with <code>x ≥ 0</code>. The strategy (<code>find_steady_states</code>)
+branches on whether the network has conservation laws.</p>
+<h3 id="closed-semi-open-networks-have-conservation-laws">Closed / semi-open networks (have conservation laws)</h3>
+<p>The steady state is unique only <em>within a stoichiometry class</em>, so the conserved totals must
+be pinned. The solver:</p>
+<ol>
+<li><strong>ODE integration</strong> (<code>_integrate_to_ss</code>, SciPy stiff <strong>Radau</strong>) from the supplied IC.
+   Integration automatically stays on the conservation manifold and relaxes to the stable
+   attractor. The horizon <code>t_end</code> defaults to 1e4 s — deliberately short so oscillatory
+   systems don't hang; raise it for very slow (e.g. leakage-dominated) kinetics.</li>
+<li><strong>Algebraic <code>least_squares</code></strong> from the same IC. This can converge onto <em>unstable</em> fixed
+   points that integration diverges away from. The algebraic system
+   (<code>_build_augmented_system</code>) stacks:</li>
+<li><strong>rank(<code>N</code>) independent ODE rows</strong> — chosen by <strong>QR factorisation with column pivoting</strong>
+     of <code>Nᵀ</code> so the rows are genuinely independent (no redundant equations), and</li>
+<li><strong>one equation per conservation law</strong>, <code>c·x − total = 0</code>, pinning the stoichiometry
+     class.</li>
+</ol>
+<p>That makes a square, well-posed root-find solved with bound-constrained
+   (<code>x ≥ 0</code>) trust-region least squares.
+3. <strong>Multi-start</strong>: random initial points generated on the constraint manifold
+   (<code>_make_feasible_initial</code> rescales a random vector to match each conserved total), then
+   ODE-integrated, falling back to algebraic solve. This is how multiple steady states (in
+   genuinely multistable networks) are discovered.</p>
+<h3 id="open-chemostatted-networks-no-conservation-laws">Open / chemostatted networks (no conservation laws)</h3>
+<p>ODE integration is skipped entirely: a limit-cycle attractor would make it orbit forever.
+The solver uses <strong>only</strong> algebraic <code>least_squares</code>, first from the supplied IC, then from
+<strong>scale-aware random restarts</strong> (sampled around the magnitude of the initial conditions).
+This is the path that finds the Brusselator's unstable focus (§10).</p>
+<h3 id="filtering-the-results">Filtering the results</h3>
+<p>Every candidate is post-processed:</p>
+<ul>
+<li><strong>Non-negativity</strong>: any <code>x_i &lt; −tol</code> is rejected.</li>
+<li><strong>Deduplication</strong>: a candidate within 10 % relative L2 distance of an existing one is
+  dropped.</li>
+<li><strong>Residual ranking</strong>: solutions are sorted by the <em>true</em> ODE residual ‖N v(x<em>)‖₂, and
+  candidates whose residual is more than 1e4× worse than the best are discarded. Using a
+  </em><em>relative</em>* residual threshold (not a fixed absolute one) is essential for stiff systems
+  where all fluxes are tiny in absolute terms — it correctly separates a genuinely converged
+  state from one "stuck at the initial condition".</li>
+</ul>
+<p>The surviving <code>SteadyState</code> objects carry <code>.concentrations</code>, <code>.eigenvalues</code>, <code>.is_stable</code>,
+<code>.is_oscillatory</code>, and <code>.residual</code> (rule of thumb: <code>&lt; 1e-6</code> good, <code>&lt; 1e-10</code> excellent).</p>
+<hr />
+<h2 id="12-stability-classification-from-the-jacobian-spectrum">12. Stability classification from the Jacobian spectrum</h2>
+<p>For each steady state the solver forms the numeric Jacobian <code>J(x*)</code> (<code>_full_jacobian_fn</code>,
+the analytic product-rule derivative of <code>N v</code>) and takes its eigenvalues with
+<code>scipy.linalg.eigvals</code>. <code>classify_steady_state</code> then decides:</p>
+<p><strong>Filtering conservation-law zeros.</strong> A closed network's Jacobian has structurally-zero
+eigenvalues, one per conservation law (motion off the stoichiometry class is forbidden).
+These would muddy the stability test, so eigenvalues with</p>
+<pre><code>|λ| &lt; 1e-4 · max_k |λ_k|
+</code></pre>
+<p>are treated as zero and dropped <em>before</em> classification. The remaining "significant"
+eigenvalues decide stability.</p>
+<table>
+<thead>
+<tr>
+<th>Condition on significant eigenvalues</th>
+<th>Classification</th>
+<th style="text-align: center;"><code>is_stable</code></th>
+<th style="text-align: center;"><code>is_oscillatory</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>all Re(λ) &lt; 0, all Im = 0</td>
+<td>stable node</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✗</td>
+</tr>
+<tr>
+<td>all Re(λ) &lt; 0, some Im ≠ 0</td>
+<td>stable spiral</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td>some Re(λ) &gt; 0, some Im ≠ 0</td>
+<td>unstable focus (Hopf)</td>
+<td style="text-align: center;">✗</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td>some Re(λ) &gt; 0, all Im = 0</td>
+<td>unstable node</td>
+<td style="text-align: center;">✗</td>
+<td style="text-align: center;">✗</td>
+</tr>
+<tr>
+<td>some Re(λ) = 0</td>
+<td>non-hyperbolic (borderline)</td>
+<td style="text-align: center;">✗</td>
+<td style="text-align: center;">—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong><code>is_stable</code></strong> = all significant eigenvalues have Re(λ) &lt; 0.</li>
+<li><strong><code>is_oscillatory</code></strong> = any significant eigenvalue has <code>|Im λ| &gt; 1e-10·|λ|</code>. Note this is
+  true for <strong>both</strong> stable spirals (Re &lt; 0, damped oscillation) and unstable foci (Re &gt; 0,
+  the Hopf case) — it flags "the system rotates in phase space near this point", which is
+  the right signal for identifying Hopf-bifurcation candidates.</li>
+</ul>
+<hr />
+<h2 id="13-stochastic-kinetics-propensities-and-the-leap">13. Stochastic kinetics: propensities and the τ-leap</h2>
+<p>When molecule counts are small (single-cell volumes, ≲10³ molecules), the deterministic ODE
+is the wrong model and mantis-delta offers two exact/approximate stochastic simulators that
+work in <strong>molecule counts</strong>, not concentrations.</p>
+<h3 id="from-rate-constant-to-stochastic-propensity">From rate constant to stochastic propensity</h3>
+<p>A deterministic rate constant <code>k</code> (with concentration units) must be converted to a
+stochastic rate constant <code>c</code> (per-molecule). For a reaction of total reactant order <code>m</code>,
+with reaction volume <em>V</em> and Avogadro's number N_A,</p>
+<pre><code>c  =  k / (N_A · V)^(m − 1)
+</code></pre>
+<p>(first-order reactions, m = 1, are unchanged). The <strong>propensity</strong> — the probability per unit
+time that the reaction fires given the current counts — is <code>a(x) = c · h(x)</code>, where <code>h(x)</code>
+is the number of distinct reactant combinations:</p>
+<pre><code>h(x)  =  Π_s  C(n_s, ν_s)  =  Π_s  n_s·(n_s−1)···(n_s−ν_s+1) / ν_s!
+</code></pre>
+<p>This combinatorial <code>h</code> (not the mass-action power <code>n_s^{ν_s}</code>) is what makes the SSA
+<em>exact</em>. Both simulators compute it directly in their <code>propensity</code> helper.</p>
+<h3 id="exact-ssa-stochastic_simulate">Exact SSA — <code>stochastic_simulate</code></h3>
+<p>Gillespie's <strong>direct method</strong>: at each step, with total propensity a₀ = Σ aⱼ, draw the
+time to the next event as an exponential, τ = −ln(r₁)/a₀, and select which reaction fires
+with probability aⱼ/a₀ (linear search on a second uniform r₂). Apply the reaction's integer
+change vector, advance time, repeat. Exact for any population size, but slow when reactions
+fire frequently.</p>
+<h3 id="approximate-leap-tau_leap_simulate">Approximate τ-leap — <code>tau_leap_simulate</code></h3>
+<p>Instead of one reaction per step, <strong>fire many at once</strong> over a leap τ by sampling each
+reaction's firing count from <code>Poisson(aⱼ · τ)</code>. Roughly <em>N×</em> faster than direct SSA, where
+<em>N</em> is the mean number of firings per leap.</p>
+<ul>
+<li><strong>Adaptive τ</strong> (default, Cao–Gillespie–Petzold 2006): τ is chosen to bound the fractional
+  change of every propensity per leap by <code>epsilon</code> (default 0.03), using the per-species
+  drift μ_i = Σ_j ν_{ji} a_j and variance σ²_i = Σ_j ν_{ji}² a_j. Pass <code>tau=…</code> to override
+  with a fixed leap.</li>
+<li><strong>Leap rejection</strong>: if a tentative leap would drive any species count negative, that leap
+  is discarded and replaced by a single exact-SSA step. This keeps counts non-negative
+  without the heavier binomial Tian/Burrage machinery — adequate for kinetic-design work.</li>
+</ul>
+<p>Both return a <code>StochasticResult</code> with <code>.times</code>, <code>.counts</code>, <code>.concentrations</code>, plus <code>.at(t)</code>
+(step-function lookup) and <code>.final()</code>. As populations grow, a τ-leap trajectory's <em>mean</em>
+converges to the deterministic ODE solution — a sanity check exercised in the test suite.</p>
+<hr />
+<h2 id="14-references">14. References</h2>
+<ul>
+<li><strong>Horn F, Jackson R</strong> (1972). General mass action kinetics. <em>Arch. Rational Mech. Anal.</em>
+  <strong>47</strong>, 81–116. <em>(Deficiency Zero Theorem.)</em></li>
+<li><strong>Feinberg M</strong> (1979). <em>Lectures on Chemical Reaction Networks.</em> University of Wisconsin.
+  Available at <a href="https://crnt.osu.edu">crnt.osu.edu</a>.</li>
+<li><strong>Feinberg M</strong> (1995). The existence and uniqueness of steady states for a class of
+  chemical reaction networks. <em>Arch. Rational Mech. Anal.</em> <strong>132</strong>, 311–370. <em>(Deficiency
+  One Theorem.)</em></li>
+<li><strong>Feinberg M</strong> (2019). <em>Foundations of Chemical Reaction Network Theory.</em> Springer.</li>
+<li><strong>Gillespie D T</strong> (1977). Exact stochastic simulation of coupled chemical reactions.
+  <em>J. Phys. Chem.</em> <strong>81</strong>, 2340–2361. <em>(Direct-method SSA.)</em></li>
+<li><strong>Cao Y, Gillespie D T, Petzold L R</strong> (2006). Efficient step size selection for the
+  tau-leaping simulation method. <em>J. Chem. Phys.</em> <strong>124</strong>, 044109. <em>(Adaptive τ.)</em></li>
+</ul>
+<hr />
+<p><em>Every numerical value in this document is produced by mantis-delta itself; reproduce them
+by pasting the snippets into a Python session with <code>pip install -e .</code> from the package root.
+See the <a href="../README.md">README</a> for the user-facing API and the <code>examples/</code> directory for
+complete runnable scripts.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
