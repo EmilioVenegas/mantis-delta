@@ -4,6 +4,8 @@ shorttitle: "Mantis-Delta: Mass-Action Network Theory for Chemical Reaction Netw
 author:
   - name: Emilio A. Venegas
     orcid: 0000-0002-7689-9185
+    email: "REPLACE_WITH_CORRESPONDING_EMAIL"   # PCI requires a contact email
+    corresponding: true
     affiliations:
       - name: Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud
         address: "Ave. Eugenio Garza Sada 2501 Sur, Col. Tecnológico"
@@ -40,7 +42,7 @@ abstract: |
   curve agrees with the closed-form quasi-steady-state approximation to
   within $1\%$ over a $400\times$ kinase/phosphatase activity scan.
   `mantis-delta` is open-source (MIT license) and available at
-  <https://github.com/emiliovenegas/mantis-delta>.
+  <https://github.com/EmilioVenegas/mantis-delta>.
 keywords:
   - chemical reaction network theory
   - mass-action kinetics
@@ -69,7 +71,7 @@ distribution-reuse: |
   the MIT License.
 external-data: |
   Source code, examples, test suite, and reproducibility scripts are openly
-  available at <https://github.com/emiliovenegas/mantis-delta>.
+  available at <https://github.com/EmilioVenegas/mantis-delta>.
 
 # ── Quarto rendering options ─────────────────────────────────────────────
 bibliography: references.bib
@@ -94,6 +96,8 @@ format:
     colorlinks: true
     include-in-header:
       text: |
+        \usepackage{lineno}
+        \linenumbers
         \usepackage{unicode-math}
         \setmathfont[
           BoldFont=XITSMath-Bold.otf
@@ -126,6 +130,8 @@ format:
             \vspace{0.6em}%
             {\small\itshape\textsuperscript{1}Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud,\\
               Ave.\ Eugenio Garza Sada 2501 Sur, Col.\ Tecnológico, Monterrey, N.L.\ 64700, México\par}%
+            \vspace{0.4em}%
+            {\small\textsuperscript{*}Corresponding author: \texttt{REPLACE\_WITH\_CORRESPONDING\_EMAIL}\par}%
           \end{center}%
           \vspace{0.8em}%
         }
@@ -148,7 +154,7 @@ execute:
   Article category:        New Results
   Subject area:            Systems Biology
   Title:                   See above
-  External data URL:       https://github.com/emiliovenegas/mantis-delta
+  External data URL:       https://github.com/EmilioVenegas/mantis-delta
   Abstract:                Included above
   Author approvals:        Stated above
   Competing interests:     None declared
@@ -741,17 +747,49 @@ enzymatic signal transduction [@goldbeter1981amplified;
 @ferrell2014ultrasensitivity], and synthetic-circuit design
 [@ang2013considerations].
 
-# Data and code availability {.unnumbered}
+# Data, scripts, and code availability {.unnumbered}
 
-All source code, examples, the 93-test pytest suite, and scripts to
-regenerate every figure in this paper are openly available under the MIT
-License at <https://github.com/emiliovenegas/mantis-delta>. The version used to
-prepare this manuscript is tagged `v0.1.0`.
+All source code, the six worked examples, the 108-test pytest suite, and
+the scripts that regenerate every figure in this paper are openly available
+under the MIT License at <https://github.com/EmilioVenegas/mantis-delta>.
+The exact version used to prepare this manuscript is tagged `v0.2.1` and
+permanently archived on Zenodo at <https://doi.org/XX.XXXX/zenodo.XXXXXXX>
+[DOI to be minted from the v0.2.1 GitHub release]. Each example script is
+self-contained, uses relative paths, is annotated for a non-specialist
+reader, and lists its required packages; a top-level `README.md` documents
+installation and usage. The rate constants of the CHA network
+(§[-@sec-cha]) are reproduced by the NUPACK-derivation script and sequence
+inputs bundled in the repository.
+
+# Funding {.unnumbered}
+
+This research received no specific grant from any funding agency in the
+public, commercial, or not-for-profit sectors.
+
+# Conflict of interest disclosure {.unnumbered}
+
+The authors declare that they comply with the PCI rule of having no
+financial conflicts of interest in relation to the content of the article.
+
+# Artificial intelligence disclosure {.unnumbered}
+
+<!-- REQUIRED by PCI — replace with the accurate statement of your actual AI
+     use. Example (matching the JOSS paper.md disclosure); edit to fit: -->
+The core algorithms, software architecture, and numerical experiments were
+designed and implemented by the author without generative-AI assistance.
+AI coding assistants were used in a limited capacity for drafting test
+scaffolding and suggesting edge-case test fixtures; all such output was
+manually reviewed and validated against known analytical results before
+inclusion. All AI-assisted contributions were checked for plagiarism and
+errors. No AI tools were used to generate the text or figures of this
+manuscript.
 
 # Author contributions {.unnumbered}
 
 E.V.\ designed the library, implemented the code, performed all numerical
-experiments, and wrote the manuscript.
+experiments, and wrote the manuscript. All listed authors meet the ICMJE
+authorship criteria, have approved the final submitted version, and agree
+to be accountable for all aspects of the work.
 
 # Acknowledgements {.unnumbered}
 
