@@ -79,3 +79,4 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 tests/__pycache__
+ROADMAP.md
