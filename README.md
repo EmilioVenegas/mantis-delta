@@ -6,12 +6,14 @@
 <p align="center"><em>Mass-Action Network Theory, Inference, and Stability for Chemical Reaction Networks</em></p>
 
 <p align="center">
-<a href="#running-the-tests"><img src="https://img.shields.io/badge/tests-108%20passed-brightgreen" alt="Tests"></a>
+<a href="#running-the-tests"><img src="https://img.shields.io/badge/tests-169%20passed-brightgreen" alt="Tests"></a>
 <a href="#installation"><img src="https://img.shields.io/badge/python-%E2%89%A53.10-blue" alt="Python"></a>
 <a href="#license"><img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="License: MIT"></a>
 </p>
 
 **mantis-delta** is a Python library for rigorous structural and numerical analysis of chemical reaction networks (CRNs) under mass-action kinetics. Given a set of reactions, it computes network-theoretic invariants — deficiency, linkage classes, weak reversibility — applies the Deficiency Zero and Deficiency One Theorems (Feinberg 1972, 1995), derives symbolic mass-action ODEs and Jacobians via SymPy, and finds steady states numerically. The core guarantee the library provides is this: when a theorem applies, you know the qualitative behaviour of the network (unique steady state, no oscillations, no bistability) for *all* physically admissible rate constants — without running a single simulation.
+
+Beyond the classical theorems, mantis-delta certifies **global** asymptotic stability (Horn–Jackson Lyapunov), detects **Absolute Concentration Robustness** (Shinar–Feinberg) and **injectivity** (Craciun–Feinberg), enumerates *all* steady states exhaustively (Gröbner / homotopy), tracks branches through folds and Hopf points by **pseudo-arclength continuation** and maps the **multistationarity parameter region** (Conradi–Feliu–Mincheva–Wiuf), and emits the **exact stochastic stationary distribution** of complex-balanced networks in closed form (Anderson–Craciun–Kurtz) alongside a Finite State Projection CME solver and SBML interoperability — a single pipeline from network structure to robustness, global stability, and analytic stochastics.
 
 The library supports three classes of chemical networks:
 
@@ -42,6 +44,15 @@ The library supports three classes of chemical networks:
    - [Visualization](#8-visualization)
    - [Time-course simulation (deterministic ODE)](#9-time-course-simulation-deterministic-ode)
    - [Stochastic simulation](#10-stochastic-simulation)
+   - [Exhaustive steady states](#11-exhaustive-steady-states-completeness-guarantee)
+   - [Global stability certification](#12-global-stability-certification-hornjackson-lyapunov)
+   - [SBML import / export](#13-sbml-import--export-interoperability)
+   - [Absolute Concentration Robustness (ACR)](#14-absolute-concentration-robustness-acr)
+   - [Injectivity](#15-injectivity-rule-out-multistationarity-past-d1t)
+   - [Exact stochastic stationary distribution](#16-exact-stochastic-stationary-distribution-no-simulation)
+   - [Finite State Projection](#17-finite-state-projection-cme-without-noise)
+   - [Pseudo-arclength continuation (fold / Hopf)](#18-pseudo-arclength-continuation-fold--hopf-detection)
+   - [Multistationarity parameter regions](#19-multistationarity-parameter-regions-conradifeliumincheva-wiuf-2017)
 5. [API reference](#api-reference)
 6. [Examples](#examples)
 7. [Troubleshooting](#troubleshooting)
@@ -57,6 +68,11 @@ The library supports three classes of chemical networks:
 # Inside a virtual environment (recommended)
 pip install mantis-delta
 
+# Optional extras:
+pip install "mantis-delta[sbml]"   # SBML import/export  (python-libsbml)
+pip install "mantis-delta[fast]"   # JIT stochastic core (numba), ~10–100× SSA speedup
+pip install "mantis-delta[all]"    # everything optional
+
 # From source
 git clone https://github.com/emiliovenegas/mantis-delta
 cd mantis-delta
@@ -64,6 +80,11 @@ pip install -e .
 ```
 
 **Requirements:** Python ≥ 3.10, NumPy ≥ 1.24, SciPy ≥ 1.10, SymPy ≥ 1.12, Matplotlib ≥ 3.6, NetworkX ≥ 3.0.
+
+**Optional dependencies** (all gracefully degrade when absent): `python-libsbml`
+for SBML interoperability (`[sbml]`); `numba` for JIT-accelerated Gillespie/τ-leap
+kernels (`[fast]`); `phcpy`/PHCpack for the homotopy-continuation steady-state
+backend (`[homotopy]`).
 
 > **Note on import name:** the PyPI distribution is called `mantis-delta`, but the Python package is imported as `mantis`:
 > ```python
@@ -568,6 +589,193 @@ Pass `tau=0.001` to override the adaptive selection and use a fixed leap size. T
 
 Both functions return a `StochasticResult` with `.times`, `.counts`, `.concentrations`, `.at(t)`, and `.final()`.
 
+> **Performance:** install the `[fast]` extra to JIT-compile the SSA/τ-leap inner
+> loops with `numba` (~10–100× speedup at scale). The code falls back to a pure-Python
+> implementation with identical results when `numba` is not installed.
+
+### 11. Exhaustive steady states (completeness guarantee)
+
+`steady_states()` uses ODE integration plus multi-start least-squares and **can
+silently miss** unstable fixed points. `all_steady_states()` instead solves the
+mass-action steady-state *polynomial system* for every complex root (lexicographic
+Gröbner basis → back-substitution → Newton polish) and returns the real
+non-negative ones — certifying the **full** steady-state set.
+
+```python
+# Schlögl model: three equilibria, the middle one unstable.
+rn = CRNetwork.from_string(
+    ["A + 2 X <-> 3 X", "X <-> B"],
+    rates={"A + 2X -> 3X": 6.0, "3X -> A + 2X": 1.0, "X -> B": 11.0, "B -> X": 6.0},
+    chemostatted={"A": 1.0, "B": 1.0},
+)
+for ss in rn.all_steady_states({"X": 0.5}):
+    print(ss.concentrations["X"], "stable" if ss.is_stable else "UNSTABLE")
+# 1.0 stable / 2.0 UNSTABLE / 3.0 stable  — multi-start typically finds only 1.0 and 3.0
+```
+
+Pass `backend="phcpy"` to use polynomial homotopy continuation (PHCpack) for
+larger/stiffer systems (requires the `[homotopy]` extra).
+
+### 12. Global stability certification (Horn–Jackson Lyapunov)
+
+For **complex-balanced** networks the pseudo-Helmholtz function
+`V(c) = Σᵢ [cᵢ(ln(cᵢ/cᵢ*) − 1) + cᵢ*]` is a strict Lyapunov function, so the
+positive equilibrium is **globally** asymptotically stable within its compatibility
+class — strictly stronger than the local eigenvalue test. Every weakly reversible
+deficiency-zero network is complex-balanced for *all* rate constants.
+
+```python
+rn = CRNetwork.from_string(["A <-> B"], rates={"A -> B": 1.0, "B -> A": 2.0})
+rn.is_complex_balanced()                       # True (δ=0, weakly reversible)
+cert = rn.certify_global_stability({"A": 3.0})
+print(cert)                                    # readable certificate
+cert.globally_stable                           # True
+cert.lyapunov_function, cert.lyapunov_derivative  # symbolic V(c) and dV/dt
+```
+
+### 13. SBML import / export (interoperability)
+
+With the `[sbml]` extra, bring existing models in and out as SBML Level 3:
+
+```python
+rn.to_sbml("model.xml")                # write SBML
+rn2 = CRNetwork.from_sbml("model.xml") # read it back (rates, stoichiometry, chemostats)
+xml = rn.to_sbml()                      # or get the document as a string
+```
+
+### 14. Absolute Concentration Robustness (ACR)
+
+A network has **ACR** in a species *S* when its steady-state concentration is the same
+in *every* positive steady state, independent of the initial totals — exactly the
+robustness a biosensor or homeostatic module is designed for. `detect_acr()` applies
+the Shinar–Feinberg (*Science* 2010) deficiency-one structural test.
+
+```python
+rn = CRNetwork.from_string(["X + Y -> 2 Y", "Y -> X"], rates={"X + Y -> 2Y": 3.0, "Y -> X": 6.0})
+res = rn.detect_acr({"X": 5.0, "Y": 5.0})
+res.has_acr          # True
+res.species          # ['X']  — robust species
+res.acr_values["X"]  # 2.0  = k2/k1, independent of the initial totals
+```
+
+### 15. Injectivity (rule out multistationarity past D1T)
+
+An **injective** network has at most one positive steady state per compatibility class,
+so it cannot be multistationary — and unlike the Deficiency One Theorem this works for
+higher-deficiency networks. `is_injective()` runs the Craciun–Feinberg sign-definiteness
+test on the (rate-free) steady-state Jacobian determinant.
+
+```python
+CRNetwork.from_string(["A <-> B"], rates={"A -> B": 1, "B -> A": 1}).is_injective().injective  # True
+# The Schlögl model is genuinely multistationary → not certified:
+schlogl.is_injective().injective                                                                # False
+```
+
+A `True` result is rate-independent (holds for all rate constants); `False` is
+inconclusive (the test is a sufficient condition).
+
+### 16. Exact stochastic stationary distribution (no simulation)
+
+For a **complex-balanced** network, Anderson–Craciun–Kurtz (2010) give the *exact*
+chemical-master-equation stationary distribution in closed form — a product of Poissons
+with means `λᵢ = N_A·V·cᵢ*` (`c*` the Birch point), conditioned on the conserved totals.
+For a single moiety this is exactly a Binomial.
+
+```python
+rn = CRNetwork.from_string(["A <-> B"], rates={"A -> B": 2.0, "B -> A": 3.0})
+rn.complex_balanced_equilibrium({"A": 40})        # Birch point c*
+sd = rn.stationary_distribution({"A": 40, "B": 0}, volume_L=1e-15, initial_as="count")
+sd.poisson_means()         # {'A': λ_A, 'B': λ_B}
+sd.expected_counts()       # exact stationary means (= Binomial mean here)
+vals, probs = sd.marginal("A")   # exact marginal pmf — matches Binomial to machine precision
+```
+
+### 17. Finite State Projection (CME without noise)
+
+`fsp()` solves the chemical master equation directly on a truncated state space
+(Munsky–Khammash 2006) — accurate where the SSA is noisy — returning transient `p(t)`
+with a leaked-mass error bound, or the stationary distribution.
+
+```python
+rn = CRNetwork.from_string(["A <-> B"], rates={"A -> B": 2.0, "B -> A": 3.0})
+stat = rn.fsp({"A": 30, "B": 0}, volume_L=1e-15, initial_as="count")        # stationary
+pt   = rn.fsp({"A": 30, "B": 0}, volume_L=1e-15, t=0.1, initial_as="count") # transient p(0.1)
+pt.expected_counts(); pt.truncation_error    # mean counts + rigorous error bound
+```
+
+For complex-balanced networks the FSP stationary distribution reproduces the
+Anderson–Craciun–Kurtz product form to machine precision — three independent methods
+(FSP, the closed form, and the SSA) all agree.
+
+### 18. Pseudo-arclength continuation (fold / Hopf detection)
+
+The `bifurcation()` log-scan (§7) recomputes steady states *independently* at each
+parameter value, so it **loses a branch at a saddle-node fold** (where the branch turns
+back on itself) and never reports the fold. `continuation()` instead parameterises the
+branch by *arclength* along the solution curve, so folds are traversed smoothly and
+detected — the standard predictor–corrector pseudo-arclength method (Keller 1977).
+
+```python
+schlogl = CRNetwork.from_string(
+    ["A + 2 X <-> 3 X", "X <-> B"],
+    rates={"A + 2X -> 3X": 6, "3X -> A + 2X": 1, "X -> B": 11, "B -> X": 6},
+    chemostatted={"A": 1.0, "B": 1.0},
+)
+res = schlogl.continuation("X -> B", (1.0, 20.0), {"X": 0.5})
+print(res)                         # branch + bifurcation summary
+res.folds()                        # both folds bounding the bistable region
+res.species_branch("X")            # X along the full S-curve (arclength order)
+```
+
+The result traces the full **S-curve** and pins both folds at their analytic locations
+`(X, k) = (1.347, 10.72)` and `(2.532, 11.15)` (critical eigenvalue ≈ 0) — neither of
+which the log-scan reports. Folds are found from a `det Gᶜ` sign change (refined to
+`det = 0`); **Hopf** points from a stability change with no fold (a complex pair crossing
+the imaginary axis), e.g. on the Brusselator at the analytic `1 + A²` threshold. The
+returned `ContinuationResult` exposes `.parameter_values` (non-monotonic across folds),
+`.branch`, `.stable`, `.eigenvalues`, and `.bifurcations` (`.folds()` / `.hopfs()`).
+
+### 19. Multistationarity parameter regions (Conradi–Feliu–Mincheva–Wiuf 2017)
+
+Where `is_injective()` (§15) answers *whether* multistationarity is possible,
+`multistationarity_region()` maps *where in parameter space* it occurs. It forms the
+critical function `φ = (−1)ˢ·det J` (`s = rank(N)`) and reads it as a polynomial in the
+steady-state concentrations: if every coefficient is positive for all positive rates the
+network is **monostationary** for all parameters; otherwise each coefficient that can go
+negative is a face of the **multistationarity region**.
+
+```python
+res = schlogl.multistationarity_region()
+res.monostationary             # False — Schlögl is genuinely multistationary
+res.region_conditions          # coefficient expressions whose negativity ⇒ multistationarity
+res.region_boundary            # EXACT boundary when steady states reduce to one polynomial
+res.multistationary_at_rates   # at the supplied rates: exact ≥2-root verdict when available
+print(res)                     # readable region summary
+
+# A reversible conversion is monostationary for all rates:
+CRNetwork.from_string(["A <-> B"], rates={"A -> B": 1, "B -> A": 2}) \
+    .multistationarity_region().monostationary    # True
+```
+
+A `monostationary` verdict is an injectivity certificate (holds for all rate constants
+and totals). Reading the coefficient signs of φ over the *whole* positive orthant is only
+a **necessary** condition (φ < 0 may occur off the steady-state set). When the steady
+states reduce to a univariate polynomial `p(x)` — directly for `rank(N) = 1` networks
+like Schlögl, or after eliminating the conservation laws — the analysis is restricted to
+the steady-state variety and becomes **exact**: `region_boundary` is the discriminant
+`disc_x(p)` (the genuine fold locus, `= 0` at the bifurcations the continuation finds),
+and `multistationary_at_rates` is a real positive-root count. For Schlögl this recovers
+the bistable window `k ∈ (10.72, 11.15)` exactly.
+
+For a fully definitive, parametrisation-free verdict on a *specific* compatibility class,
+**`is_multistationary(initial_conditions)`** simply enumerates all positive steady states
+(via [exhaustive enumeration](#11-exhaustive-steady-states-completeness-guarantee)) and
+checks for ≥ 2:
+
+```python
+schlogl.is_multistationary({"X": 0.5})   # True at k = 11 (three steady states)
+```
+
 ---
 
 ## API reference
@@ -674,6 +882,43 @@ Scans one rate constant over a log-spaced range.
 | `initial_conditions` | `None` | Starting concentrations for each scan point |
 | `plot` | `False` | If True, show a bifurcation plot immediately |
 | `t_end` | `1e4` | ODE integration horizon (s) passed to `steady_states()` at each scan point |
+
+---
+
+##### `continuation(parameter, range, initial_conditions, ds=0.05, max_steps=2000, initial_state=None) → ContinuationResult`
+
+Pseudo-arclength continuation of a steady-state branch — traverses folds the log-scan
+loses and detects fold / Hopf bifurcations. See [§18](#18-pseudo-arclength-continuation-fold--hopf-detection).
+
+| Parameter | Default | Description |
+|---|---|---|
+| `parameter` | *(required)* | Rate key string to continue (will be normalized) |
+| `range` | *(required)* | `(λ_min, λ_max)` box the branch is traced within (must bracket folds to capture an S-curve) |
+| `initial_conditions` | *(required)* | `dict[str, float]` — fixes the conservation totals and seeds the branch |
+| `ds` | `0.05` | Arclength step (adapted automatically on Newton failure / success) |
+| `max_steps` | `2000` | Cap on continuation steps (guards against closed isolas) |
+| `initial_state` | `None` | Explicit starting steady state — use to select which branch to follow |
+
+`ContinuationResult` exposes `.parameter_values` (arclength order, non-monotonic across folds), `.branch`, `.stable`, `.eigenvalues`, `.bifurcations`, `.folds()`, `.hopfs()`, and `.species_branch(species)`.
+
+---
+
+##### `multistationarity_region() → MultistationarityResult`
+
+Computes the multistationarity parameter region via the Conradi–Feliu–Mincheva–Wiuf (2017) critical-function criterion. Rate-free structural verdict; when the steady states reduce to a univariate polynomial it also returns the **exact** discriminant boundary and an exact in-/out-of-region check at the set rates. See [§19](#19-multistationarity-parameter-regions-conradifeliumincheva-wiuf-2017).
+
+Returns `.monostationary`, `.multistationary_possible`, `.critical_function`, `.coefficient_terms`, `.region_conditions`, `.region_boundary`, `.steady_state_polynomial`, and `.multistationary_at_rates`.
+
+---
+
+##### `is_multistationary(initial_conditions, backend='auto') → bool`
+
+Definitive, parametrisation-free verdict for one compatibility class: enumerates all positive steady states (`all_steady_states`) in the class fixed by `initial_conditions` and returns `True` iff there are ≥ 2.
+
+| Parameter | Default | Description |
+|---|---|---|
+| `initial_conditions` | *(required)* | `dict[str, float]` — fixes the conservation totals (the class) |
+| `backend` | `'auto'` | Steady-state enumeration backend (`'auto'` / `'sympy'` / `'phcpy'`) |
 
 ---
 
