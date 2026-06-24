@@ -19,7 +19,9 @@ The library supports three classes of chemical networks:
 - **Open / chemostatted networks** — selected species are held at fixed concentrations by an external reservoir (e.g. Brusselator with A and B chemostatted). Chemostatted species are excluded from the ODE system and stoichiometry rank calculation but appear in flux expressions. The solver uses a pure algebraic strategy that can locate both stable *and* **unstable fixed points** — including Hopf-bifurcation centres that forward integration can never reach.
 - **Semi-open networks** — some species chemostatted, others conserved among themselves.
 
-**More:** [API documentation site](https://emiliovenegas.github.io/mantis-delta) · [changelog](CHANGELOG.md) · [preprint (PDF)](paper/mantis_preprint.pdf)
+**More:** [mathematical background & worked calculations](docs/theory.md) · [API documentation site](https://emiliovenegas.github.io/mantis-delta) · [changelog](CHANGELOG.md) · [preprint (PDF)](paper/mantis_preprint.pdf)
+
+> **Going deeper:** for the underlying mathematics — how the stoichiometry matrix, mass-action ODEs, conservation laws, deficiency, and the steady-state/stochastic solvers are actually computed, with worked numerical examples (reaction matrices, steady states, eigenvalues) — see **[docs/theory.md](docs/theory.md)**.
 
 ---
 
@@ -645,7 +647,7 @@ Returns the Jacobian with both rate constants and species concentrations substit
 
 ---
 
-##### `steady_states(initial_conditions, n_attempts=50, seed=None) → list[SteadyState]`
+##### `steady_states(initial_conditions, n_attempts=50, seed=None, t_end=1e4) → list[SteadyState]`
 
 Finds steady states consistent with the conservation law totals implied by `initial_conditions`.
 
@@ -654,12 +656,13 @@ Finds steady states consistent with the conservation law totals implied by `init
 | `initial_conditions` | *(required)* | `dict[str, float]` — initial concentrations; missing species default to 0 |
 | `n_attempts` | `50` | Total solver attempts. Increase for thorough multistability search |
 | `seed` | `None` | Integer seed for reproducibility |
+| `t_end` | `1e4` | ODE integration horizon (s) for the integration-based strategies. Kept short so oscillatory systems don't hang; increase for networks with very slow reactions (τ = 1/(k·[X]) ≫ 1e4 s) so integration reaches the true attractor |
 
 Returns a `list[SteadyState]`, possibly empty if no physical steady state was found.
 
 ---
 
-##### `bifurcation(parameter, range, n_points=100, initial_conditions=None, plot=False) → BifurcationResult`
+##### `bifurcation(parameter, range, n_points=100, initial_conditions=None, plot=False, t_end=1e4) → BifurcationResult`
 
 Scans one rate constant over a log-spaced range.
 
@@ -670,6 +673,7 @@ Scans one rate constant over a log-spaced range.
 | `n_points` | `100` | Number of parameter values |
 | `initial_conditions` | `None` | Starting concentrations for each scan point |
 | `plot` | `False` | If True, show a bifurcation plot immediately |
+| `t_end` | `1e4` | ODE integration horizon (s) passed to `steady_states()` at each scan point |
 
 ---
 
@@ -754,7 +758,9 @@ class StochasticResult:
     times:          np.ndarray              # event / record times (s)
     counts:         dict[str, np.ndarray]   # species → molecule counts
     concentrations: dict[str, np.ndarray]   # species → concentration (M)
+    n_events:       int                     # reaction firings (SSA) / record points (τ-leap)
     success:        bool                    # finished before exhausting events?
+    volume_L:       float                   # reaction volume (L) used for count↔conc
 ```
 
 Also provides `.at(t)` and `.final()`.
