@@ -31,6 +31,18 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
+[project.optional-dependencies]
+# SBML interoperability (import/export).
+sbml = ["python-libsbml>=5.19"]
+# JIT-accelerated stochastic kernels (Gillespie SSA / tau-leap).
+fast = ["numba>=0.57"]
+# Optional exhaustive steady-state backend via polynomial homotopy continuation.
+homotopy = ["phcpy>=1.1"]
+# Everything optional, for users who want the full feature set.
+all = ["python-libsbml>=5.19", "numba>=0.57"]
+# Development / test tooling.
+dev = ["pytest>=7", "pytest-cov>=4", "python-libsbml>=5.19", "numba>=0.57"]
+
 [project.urls]
 Homepage = "https://github.com/emiliovenegas/mantis-delta"
 Repository = "https://github.com/emiliovenegas/mantis-delta"
@@ -45,3 +57,15 @@ include = ["mantis*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["mantis"]
+branch = true
+omit = ["mantis/plot.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

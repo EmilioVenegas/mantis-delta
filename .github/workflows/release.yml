@@ -1,0 +1,43 @@
+name: Release
+
+# Pushing a version tag (e.g. `v0.3.0`, produced by scripts/release.sh) creates a
+# GitHub Release. That single event fans out automatically:
+#   * publish.yml builds the wheel/sdist and publishes to PyPI;
+#   * the Zenodo–GitHub integration archives the release and mints a DOI
+#     (enable the repository once at https://zenodo.org/account/settings/github/;
+#     release metadata is taken from .zenodo.json).
+# This is the "Zenodo release automation" that permanently solves the preprint
+# DOI requirement — every tagged release is archived and citable.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history + tags for the changelog
+
+      - name: Generate release notes from changelog
+        id: notes
+        uses: orhun/git-cliff-action@v4
+        with:
+          args: --latest --strip header
+        env:
+          OUTPUT: RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false

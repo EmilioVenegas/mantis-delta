@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use mantis-delta in your research, please cite it as below."
+title: "mantis-delta: Mass-Action Network Theory, Inference, and Stability for Chemical Reaction Networks"
+type: software
+authors:
+  - family-names: Venegas
+    given-names: Emilio A.
+    orcid: "https://orcid.org/0000-0002-7689-9185"
+    affiliation: "Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud"
+repository-code: "https://github.com/emiliovenegas/mantis-delta"
+url: "https://github.com/emiliovenegas/mantis-delta"
+license: MIT
+keywords:
+  - chemical reaction network theory
+  - mass-action kinetics
+  - deficiency theorems
+  - steady-state analysis
+  - stochastic simulation
+  - SBML
+  - scientific Python

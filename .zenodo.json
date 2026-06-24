@@ -1,0 +1,27 @@
+{
+  "title": "mantis-delta: Mass-Action Network Theory, Inference, and Stability for Chemical Reaction Networks",
+  "description": "A pure-Python library for rigorous structural and numerical analysis of chemical reaction networks under mass-action kinetics: deficiency theorems, symbolic ODE/Jacobian construction, hybrid steady-state solving, exhaustive (homotopy) steady-state enumeration, global Lyapunov stability certification, stochastic simulation, SBML interoperability, and bifurcation analysis.",
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Venegas, Emilio A.",
+      "orcid": "0000-0002-7689-9185",
+      "affiliation": "Tecnológico de Monterrey, Escuela de Medicina y Ciencias de la Salud, Monterrey, México"
+    }
+  ],
+  "keywords": [
+    "chemical reaction network theory",
+    "mass-action kinetics",
+    "deficiency theorems",
+    "steady-state analysis",
+    "absolute concentration robustness",
+    "Lyapunov stability",
+    "stochastic simulation",
+    "SBML",
+    "DNA computing",
+    "systems biology",
+    "scientific Python"
+  ]
+}
