@@ -262,6 +262,54 @@ class CRNetwork:
             t_end=t_end,
         )
 
+    def all_steady_states(
+        self,
+        initial_conditions: dict[str, float],
+        backend: str = "auto",
+        scale: float | None = None,
+    ) -> list:
+        """
+        Exhaustively enumerate *all* positive steady states (with completeness).
+
+        Unlike :meth:`steady_states` (ODE integration + multi-start least-squares,
+        which can silently miss unstable fixed points), this solves the mass-action
+        steady-state polynomial system for *every* complex root and returns the real
+        non-negative ones — so it certifies the full steady-state set rather than
+        sampling it.  The classic payoff: on the Schlögl model it returns all three
+        equilibria, including the unstable middle branch that integration never
+        reaches.
+
+        Parameters
+        ----------
+        initial_conditions : dict[str, float]
+            Used only to fix the conservation-law totals (the stoichiometric
+            compatibility class) for closed networks.
+        backend : {'auto', 'sympy', 'phcpy'}
+            ``'sympy'`` is the pure-Python Gröbner-basis enumerator (default via
+            ``'auto'``).  ``'phcpy'`` uses optional polynomial homotopy continuation
+            (PHCpack) for larger / stiffer systems — ``pip install mantis-delta[homotopy]``.
+        scale : float, optional
+            Characteristic concentration used to non-dimensionalise the variables.
+            Inferred from the conservation totals / initial conditions when omitted;
+            override only if the solver struggles on a badly-scaled network.
+
+        Returns
+        -------
+        list[SteadyState]
+            One entry per distinct positive steady state, sorted by residual, each
+            with ``.eigenvalues``, ``.is_stable``, ``.is_oscillatory``.
+        """
+        from .steady_states import all_steady_states
+        return all_steady_states(
+            self._reactions,
+            self.species,
+            self._rates,
+            initial_conditions,
+            chemostatted_values=self._chemostatted or None,
+            backend=backend,
+            scale=scale,
+        )
+
     def bifurcation(
         self,
         parameter: str,
@@ -311,6 +359,63 @@ class CRNetwork:
             from .plot import plot_bifurcation
             plot_bifurcation(result, species=self.species[0])
         return result
+
+    def continuation(
+        self,
+        parameter: str,
+        range: tuple[float, float],
+        initial_conditions: dict[str, float],
+        ds: float = 0.05,
+        max_steps: int = 2000,
+        initial_state: dict[str, float] | None = None,
+    ) -> object:
+        """
+        Trace a steady-state branch by **pseudo-arclength continuation**.
+
+        Unlike :meth:`bifurcation` (an independent log-scan that loses the branch
+        at folds and never reports them), this parameterises the branch by
+        arclength along the solution curve, so saddle-node folds are traversed
+        smoothly and detected.  The classic payoff: on the Schlögl model it traces
+        the full S-curve and pins both folds that bound the bistable region.
+
+        Parameters
+        ----------
+        parameter : str
+            Rate key to continue, e.g. ``"A + 2X -> 3X"``.
+        range : tuple[float, float]
+            ``(λ_min, λ_max)`` box the branch is traced within; to capture an
+            S-curve the box must bracket both folds.
+        initial_conditions : dict[str, float]
+            Fixes the conservation totals (the compatibility class) and seeds the
+            branch (a steady state is solved at ``λ_min`` unless ``initial_state``
+            is given).
+        ds : float
+            Arclength step (adapted automatically on Newton failure / success).
+        max_steps : int
+            Cap on continuation steps (guards against closed isolas).
+        initial_state : dict[str, float], optional
+            Explicit starting steady state — use to select which branch to follow.
+
+        Returns
+        -------
+        ContinuationResult
+            With ``.parameter_values`` (arclength order — non-monotonic across
+            folds), ``.branch``, ``.stable``, ``.bifurcations`` (``.folds()`` /
+            ``.hopfs()``), and ``.species_branch(species)``.  ``str()`` summarises.
+        """
+        from .continuation import pseudo_arclength_continuation
+        return pseudo_arclength_continuation(
+            self._reactions,
+            self.species,
+            self._rates,
+            parameter=parameter,
+            param_range=range,
+            initial_conditions=initial_conditions,
+            chemostatted_values=self._chemostatted or None,
+            ds=ds,
+            max_steps=max_steps,
+            initial_state=initial_state,
+        )
 
     def simulate(
         self,
@@ -400,6 +505,54 @@ class CRNetwork:
             chemostatted_values=self._chemostatted or None,
         )
 
+    def stationary_distribution(
+        self,
+        initial_conditions: dict[str, float],
+        volume_L: float,
+        *,
+        initial_as: str = "concentration",
+        max_states: int = 200_000,
+    ):
+        """
+        Exact stochastic stationary distribution (Anderson–Craciun–Kurtz 2010).
+
+        For a complex-balanced network the chemical master equation has a closed-form
+        product-of-Poissons stationary distribution with means ``λ_i = N_A·V·c_i*``
+        (``c*`` the complex-balanced equilibrium) — written down *from structure
+        alone, with no simulation*. With conservation laws it is that product
+        conditioned on the conserved totals (e.g. a Binomial for a single moiety).
+
+        Parameters
+        ----------
+        initial_conditions : dict[str, float]
+            Fixes the compatibility class; interpreted per ``initial_as``.
+        volume_L : float
+            Reaction volume in litres (sets the absolute molecule counts).
+        initial_as : 'concentration' or 'count'
+        max_states : int
+            Cap on enumerated states for the conditioned (closed-network) case.
+
+        Returns
+        -------
+        StationaryDistribution
+            With ``.poisson_means()``, ``.probability(state)``, ``.expected_counts()``,
+            ``.marginal(species)`` and ``.sample(...)``.
+
+        Raises
+        ------
+        ValueError
+            If the network is not complex-balanced (the closed form does not apply).
+        """
+        from .stochastic_stationary import stationary_distribution
+        return stationary_distribution(
+            self._reactions, self.species, self._rates,
+            self.deficiency, self.is_weakly_reversible,
+            initial_conditions, volume_L,
+            initial_as=initial_as,
+            chemostatted_values=self._chemostatted or None,
+            max_states=max_states,
+        )
+
     def tau_leap_simulate(
         self,
         initial_conditions: dict[str, float],
@@ -446,6 +599,285 @@ class CRNetwork:
             chemostatted_values=self._chemostatted or None,
         )
 
+    def fsp(
+        self,
+        initial_conditions: dict[str, float],
+        volume_L: float,
+        t: float | None = None,
+        *,
+        initial_as: str = "concentration",
+        max_states: int = 100_000,
+    ):
+        """
+        Solve the chemical master equation by Finite State Projection (Munsky–Khammash 2006).
+
+        Truncates the count-state space to the reachable set, builds the CME generator,
+        and solves it directly — accurate where the SSA is noisy (low molecule numbers),
+        with a rigorous truncation-error bound.
+
+        Parameters
+        ----------
+        initial_conditions : dict[str, float]
+            Starting state; interpreted per ``initial_as``.
+        volume_L : float
+            Reaction volume in litres.
+        t : float, optional
+            If given, returns the transient distribution ``p(t)``; if ``None``, returns
+            the stationary distribution (valid for closed, fully enumerated networks).
+        initial_as : 'concentration' or 'count'
+        max_states : int
+            Cap on the number of enumerated states.
+
+        Returns
+        -------
+        FSPResult
+            With ``.probabilities``, ``.states``, ``.marginal(species)``,
+            ``.expected_counts()``, and ``.truncation_error``.
+        """
+        from .fsp import fsp_solve
+        return fsp_solve(
+            self._reactions, self.species, self._rates,
+            initial_conditions, volume_L, t=t, initial_as=initial_as,
+            chemostatted_values=self._chemostatted or None,
+            max_states=max_states,
+        )
+
     def draw(self, ax=None, layout: str = "spring") -> matplotlib.axes.Axes:
         from .plot import draw_reaction_graph
         return draw_reaction_graph(self._crnt_graph, ax=ax, layout=layout)
+
+    # ── Modern structural analysis ──────────────────────────────────────────────
+
+    def detect_acr(
+        self, initial_conditions: dict[str, float] | None = None
+    ):
+        """
+        Detect Absolute Concentration Robustness (Shinar–Feinberg, *Science* 2010).
+
+        A deficiency-one network with two non-terminal complexes differing in a single
+        species *S* has ACR in *S*: its steady-state concentration is independent of the
+        initial totals — the robustness property at the heart of biosensor design.
+
+        Parameters
+        ----------
+        initial_conditions : dict[str, float], optional
+            When supplied (with rate constants set), the robust steady-state value of
+            each ACR species is computed at a positive steady state.
+
+        Returns
+        -------
+        ACRResult
+            With ``.has_acr``, ``.species``, ``.acr_values``, and a readable summary
+            via ``str()``.
+        """
+        from .acr import detect_acr
+        return detect_acr(
+            self._reactions, self.species, self._crnt_graph, self.deficiency,
+            rate_values=self._rates or None,
+            initial_conditions=initial_conditions,
+            chemostatted_values=self._chemostatted or None,
+        )
+
+    def is_injective(self):
+        """
+        Test mass-action injectivity (Craciun–Feinberg, *SIAM J. Appl. Math.* 2005/06).
+
+        An injective network has **at most one** positive steady state in each
+        stoichiometric compatibility class — ruling out multistationarity. Unlike the
+        Deficiency One Theorem this works for higher-deficiency networks too. The test
+        is the sign-definiteness of the steady-state Jacobian determinant over all
+        positive concentrations and rate constants (a sufficient condition).
+
+        Returns
+        -------
+        InjectivityResult
+            With ``.injective`` (True ⇒ certified injective; False ⇒ inconclusive),
+            ``.determinant``, and a readable summary via ``str()``.
+        """
+        from .injectivity import test_injectivity
+        return test_injectivity(
+            self._reactions, self.species,
+            chemostatted_values=self._chemostatted or None,
+        )
+
+    def multistationarity_region(self):
+        """
+        Compute the multistationarity parameter region (Conradi–Feliu–Mincheva–Wiuf,
+        *PLoS Comput. Biol.* 2017).
+
+        Where :meth:`is_injective` answers *whether* multistationarity is possible,
+        this maps *where in parameter space* it occurs.  It forms the critical
+        function ``φ = (−1)^s·det J`` (``s = rank(N)``) and reads it as a polynomial
+        in the steady-state concentrations: if every coefficient is positive for all
+        positive rates the network is monostationary for all parameters; otherwise
+        each coefficient that can go negative is a face of the multistationarity
+        region.  When rate constants are set, also reports whether *those* rates lie
+        inside the region.
+
+        Returns
+        -------
+        MultistationarityResult
+            With ``.monostationary``, ``.multistationary_possible``,
+            ``.critical_function``, ``.region_conditions``,
+            ``.multistationary_at_rates``, and a readable summary via ``str()``.
+        """
+        from .multistationarity import multistationarity_region
+        return multistationarity_region(
+            self._reactions, self.species,
+            rate_values=self._rates or None,
+            chemostatted_values=self._chemostatted or None,
+        )
+
+    def is_multistationary(
+        self, initial_conditions: dict[str, float], backend: str = "auto"
+    ) -> bool:
+        """
+        Exactly decide multistationarity in one compatibility class by enumeration.
+
+        Whereas :meth:`multistationarity_region` gives the rate-free *structural*
+        verdict (and the symbolic region), this is the concrete numeric answer for
+        the supplied rate constants and totals: it enumerates *all* positive steady
+        states (:meth:`all_steady_states`) in the class fixed by ``initial_conditions``
+        and returns ``True`` iff there are at least two.  Definitive for any network —
+        no parametrisation or sign condition required.
+
+        Parameters
+        ----------
+        initial_conditions : dict[str, float]
+            Fixes the stoichiometric compatibility class (the conservation totals).
+        backend : {'auto', 'sympy', 'phcpy'}
+            Steady-state enumeration backend (see :meth:`all_steady_states`).
+
+        Returns
+        -------
+        bool
+            ``True`` ⇔ ≥ 2 positive steady states in this class.
+        """
+        states = self.all_steady_states(initial_conditions, backend=backend)
+        return len(states) >= 2
+
+    # ── Global stability (Horn–Jackson Lyapunov) ────────────────────────────────
+
+    def is_complex_balanced(
+        self, initial_conditions: dict[str, float] | None = None
+    ) -> bool:
+        """
+        Whether the network is complex-balanced.
+
+        Every weakly reversible deficiency-zero network is complex-balanced for
+        *all* rate constants (Horn–Jackson). For weakly reversible higher-deficiency
+        networks the property is rate-dependent and is verified numerically at the
+        positive equilibrium — pass ``initial_conditions`` to enable that check.
+        """
+        from .stability import is_complex_balanced
+        return is_complex_balanced(
+            self._reactions, self.species, self._rates,
+            self.deficiency, self.is_weakly_reversible,
+            initial_conditions=initial_conditions,
+            chemostatted_values=self._chemostatted or None,
+        )
+
+    def complex_balanced_equilibrium(
+        self, initial_conditions: dict[str, float]
+    ) -> dict[str, float]:
+        """
+        Return the **Birch point** — the unique positive complex-balanced equilibrium
+        in the stoichiometric compatibility class fixed by ``initial_conditions``.
+
+        Defined only for complex-balanced networks (every weakly reversible
+        deficiency-zero network qualifies, for all rates). This equilibrium sets the
+        means of the exact stochastic stationary distribution (see
+        :meth:`stationary_distribution`). Raises ``ValueError`` otherwise.
+        """
+        from .stability import complex_balanced_equilibrium
+        return complex_balanced_equilibrium(
+            self._reactions, self.species, self._rates,
+            self.deficiency, self.is_weakly_reversible, initial_conditions,
+            chemostatted_values=self._chemostatted or None,
+        )
+
+    def certify_global_stability(
+        self,
+        initial_conditions: dict[str, float],
+        n_samples: int = 200,
+        seed: int = 0,
+    ):
+        """
+        Certify *global* asymptotic stability via the Horn–Jackson Lyapunov function.
+
+        For complex-balanced networks the pseudo-Helmholtz function
+        ``V(c) = Σ_i [c_i(ln(c_i/c_i*) − 1) + c_i*]`` is a strict Lyapunov function,
+        so the positive equilibrium ``c*`` is globally asymptotically stable within
+        its stoichiometric compatibility class — a strictly stronger statement than
+        the local eigenvalue test.
+
+        Parameters
+        ----------
+        initial_conditions : dict[str, float]
+            Fixes the compatibility class (conservation totals) and the equilibrium.
+        n_samples : int
+            Number of random points in the class at which ``dV/dt ≤ 0`` is verified.
+        seed : int
+            RNG seed for the sampling.
+
+        Returns
+        -------
+        StabilityCertificate
+            With ``.globally_stable``, ``.equilibrium``, ``.lyapunov_function`` (V),
+            and ``.lyapunov_derivative`` (dV/dt).  ``str()`` gives a readable summary.
+        """
+        from .stability import certify_global_stability
+        return certify_global_stability(
+            self._reactions, self.species, self._rates,
+            self.deficiency, self.is_weakly_reversible,
+            self.odes(numeric_rates=True), initial_conditions,
+            chemostatted_values=self._chemostatted or None,
+            n_samples=n_samples, seed=seed,
+        )
+
+    # ── Interoperability (SBML) ─────────────────────────────────────────────────
+
+    def to_sbml(self, path: str | None = None) -> str:
+        """
+        Export this network to SBML (Level 3 Version 2).
+
+        Requires the optional ``python-libsbml`` package
+        (``pip install mantis-delta[sbml]``).
+
+        Parameters
+        ----------
+        path : str, optional
+            If given, the SBML document is written to this file path.  The XML
+            string is returned in all cases.
+
+        Returns
+        -------
+        str
+            The SBML document as an XML string.
+        """
+        from .sbml import network_to_sbml, write_sbml
+        if path is not None:
+            write_sbml(self, path)
+        return network_to_sbml(self)
+
+    @classmethod
+    def from_sbml(cls, source: str) -> CRNetwork:
+        """
+        Construct a network from an SBML model.
+
+        Requires the optional ``python-libsbml`` package
+        (``pip install mantis-delta[sbml]``).
+
+        Parameters
+        ----------
+        source : str
+            Either a path to an ``.xml`` SBML file or a raw SBML/XML string.
+            Mass-action kinetic laws are parsed to recover rate constants where
+            possible; SBML boundary/constant species become chemostatted species.
+
+        Returns
+        -------
+        CRNetwork
+        """
+        from .sbml import network_from_sbml
+        return network_from_sbml(source)

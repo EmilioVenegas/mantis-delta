@@ -1,5 +1,4 @@
 """Numerical ODE simulation, steady-state finding, stability analysis, and bifurcation scanning."""
-import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -124,8 +123,8 @@ def gillespie_simulate(
         Full trajectory of times, counts and concentrations.
     """
     from .stoichiometry import fold_chemostatted_into_rates
+    from ._kernels import build_kernel_arrays, normalize_seed, ssa_kernel
 
-    rng = np.random.default_rng(seed)
     chem_vals = chemostatted_values or {}
     eff_rates = (
         fold_chemostatted_into_rates(reactions, rate_values, chem_vals)
@@ -138,102 +137,26 @@ def gillespie_simulate(
     NA_V = AVOGADRO * volume_L
 
     # Initial counts
-    n = np.zeros(n_sp, dtype=np.int64)
+    n0 = np.zeros(n_sp, dtype=np.int64)
     for s, val in initial_conditions.items():
         if s not in sp_idx:
             continue
         if initial_as == "count":
-            n[sp_idx[s]] = int(round(val))
+            n0[sp_idx[s]] = int(round(val))
         else:
-            n[sp_idx[s]] = int(round(val * NA_V))
+            n0[sp_idx[s]] = int(round(val * NA_V))
 
-    # Per-reaction reactant info and stoichiometric change vector
-    rxn_info = []  # list of (k_deterministic, [(idx, coeff), ...], change_vec)
-    for rxn in reactions:
-        k_det = float(eff_rates.get(rxn.rate_key, 0.0))
-        reactants = [(sp_idx[name], coeff) for name, coeff in rxn.reactants
-                     if name not in chem]
-        change = np.zeros(n_sp, dtype=np.int64)
-        for name, coeff in rxn.reactants:
-            if name in sp_idx and name not in chem:
-                change[sp_idx[name]] -= coeff
-        for name, coeff in rxn.products:
-            if name in sp_idx and name not in chem:
-                change[sp_idx[name]] += coeff
-        rxn_info.append((k_det, reactants, change))
+    c_eff, react_sp, react_co, change = build_kernel_arrays(
+        reactions, species, eff_rates, chem, NA_V
+    )
 
-    def propensity(rxn_idx: int, state: np.ndarray) -> float:
-        """Stochastic propensity for reaction rxn_idx given current counts."""
-        k_det, reactants, _ = rxn_info[rxn_idx]
-        if k_det <= 0.0:
-            return 0.0
-        order = sum(c for _, c in reactants)
-        # h(x) = product of combinatorial choose terms
-        h = 1.0
-        for idx, coeff in reactants:
-            ni = int(state[idx])
-            if ni < coeff:
-                return 0.0
-            for j in range(coeff):
-                h *= (ni - j)
-            if coeff > 1:
-                h /= math.factorial(coeff)
-        # c = k_det / (N_A V)^(order - 1)
-        if order > 1:
-            c = k_det / (NA_V ** (order - 1))
-        else:
-            c = k_det
-        return c * h
+    # The direct-method SSA loop runs in a numba-JIT kernel when available,
+    # else as an equivalent pure-Python loop (see mantis._kernels).
+    times_arr, history_arr, n_events, success = ssa_kernel(
+        n0, c_eff, react_sp, react_co, change,
+        float(t_span[0]), float(t_span[1]), int(max_events), normalize_seed(seed),
+    )
 
-    times = [float(t_span[0])]
-    history = [n.copy()]
-    t = float(t_span[0])
-    tf = float(t_span[1])
-    n_events = 0
-    success = True
-
-    # Pre-allocate propensity array
-    a = np.zeros(len(reactions))
-
-    while t < tf:
-        if n_events >= max_events:
-            success = False
-            break
-        for j in range(len(reactions)):
-            a[j] = propensity(j, n)
-        a0 = float(a.sum())
-        if a0 <= 0.0:
-            # No more reactions can fire; system frozen.
-            break
-        # Time to next event
-        r1, r2 = rng.random(), rng.random()
-        tau = -math.log(r1) / a0
-        t_new = t + tau
-        if t_new > tf:
-            break
-        # Pick reaction
-        threshold = r2 * a0
-        cum = 0.0
-        chosen = len(reactions) - 1
-        for j in range(len(reactions)):
-            cum += a[j]
-            if cum >= threshold:
-                chosen = j
-                break
-        # Apply
-        n = n + rxn_info[chosen][2]
-        t = t_new
-        times.append(t)
-        history.append(n.copy())
-        n_events += 1
-
-    # Pad to tf
-    if times[-1] < tf:
-        times.append(tf)
-        history.append(n.copy())
-
-    times_arr = np.asarray(times)
-    history_arr = np.stack(history, axis=0)   # shape (T, n_sp)
     counts_dict = {sp: history_arr[:, i] for i, sp in enumerate(species)}
     conc_dict = {sp: history_arr[:, i] / NA_V for i, sp in enumerate(species)}
 
@@ -241,8 +164,8 @@ def gillespie_simulate(
         times=times_arr,
         counts=counts_dict,
         concentrations=conc_dict,
-        n_events=n_events,
-        success=success,
+        n_events=int(n_events),
+        success=bool(success),
         volume_L=volume_L,
     )
 
@@ -298,8 +221,8 @@ def tau_leap_simulate(
     Tian/Burrage refinement, but adequate for most kinetic-design contexts).
     """
     from .stoichiometry import fold_chemostatted_into_rates
+    from ._kernels import build_kernel_arrays, normalize_seed, tau_leap_kernel
 
-    rng = np.random.default_rng(seed)
     chem_vals = chemostatted_values or {}
     eff_rates = (
         fold_chemostatted_into_rates(reactions, rate_values, chem_vals)
@@ -311,132 +234,30 @@ def tau_leap_simulate(
     n_sp = len(species)
     NA_V = AVOGADRO * volume_L
 
-    n = np.zeros(n_sp, dtype=np.int64)
+    n0 = np.zeros(n_sp, dtype=np.int64)
     for s, val in initial_conditions.items():
         if s not in sp_idx:
             continue
         if initial_as == "count":
-            n[sp_idx[s]] = int(round(val))
+            n0[sp_idx[s]] = int(round(val))
         else:
-            n[sp_idx[s]] = int(round(val * NA_V))
+            n0[sp_idx[s]] = int(round(val * NA_V))
 
-    rxn_info = []
-    change_matrix = np.zeros((len(reactions), n_sp), dtype=np.int64)
-    for ridx, rxn in enumerate(reactions):
-        k_det = float(eff_rates.get(rxn.rate_key, 0.0))
-        reactants = [(sp_idx[name], coeff) for name, coeff in rxn.reactants
-                     if name not in chem]
-        for name, coeff in rxn.reactants:
-            if name in sp_idx and name not in chem:
-                change_matrix[ridx, sp_idx[name]] -= coeff
-        for name, coeff in rxn.products:
-            if name in sp_idx and name not in chem:
-                change_matrix[ridx, sp_idx[name]] += coeff
-        rxn_info.append((k_det, reactants))
+    c_eff, react_sp, react_co, change_matrix = build_kernel_arrays(
+        reactions, species, eff_rates, chem, NA_V
+    )
 
-    def propensity(rxn_idx: int, state: np.ndarray) -> float:
-        k_det, reactants = rxn_info[rxn_idx]
-        if k_det <= 0.0:
-            return 0.0
-        order = sum(c for _, c in reactants)
-        h = 1.0
-        for idx, coeff in reactants:
-            ni = int(state[idx])
-            if ni < coeff:
-                return 0.0
-            for j in range(coeff):
-                h *= (ni - j)
-            if coeff > 1:
-                h /= math.factorial(coeff)
-        if order > 1:
-            c = k_det / (NA_V ** (order - 1))
-        else:
-            c = k_det
-        return c * h
-
-    def all_propensities(state: np.ndarray) -> np.ndarray:
-        out = np.empty(len(reactions))
-        for j in range(len(reactions)):
-            out[j] = propensity(j, state)
-        return out
-
-    def adaptive_tau(state: np.ndarray, a: np.ndarray) -> float:
-        """Cao et al. 2006: bound the relative change of each propensity."""
-        a0 = float(a.sum())
-        if a0 <= 0:
-            return float("inf")
-        # Per-species drift and variance under one leap
-        # mu_i = Σ_j ν_ji · a_j ;  σ²_i = Σ_j ν_ji² · a_j
-        nu = change_matrix  # (n_rxn, n_sp)
-        mu = nu.T @ a       # (n_sp,)
-        sigma2 = (nu.T ** 2) @ a
-        # Highest-order reaction touching each species (Cao approximation g_i)
-        # Simplification: g_i = 2 for all species (works for ≤ 2nd-order rxns)
-        g = np.full(n_sp, 2.0)
-        x = np.maximum(state.astype(float), 1.0)
-        bound1 = np.where(np.abs(mu) > 0, np.maximum(epsilon * x / g, 1.0) / np.abs(mu), np.inf)
-        bound2 = np.where(sigma2 > 0, (np.maximum(epsilon * x / g, 1.0) ** 2) / sigma2, np.inf)
-        return float(min(bound1.min(), bound2.min()))
-
-    t = float(t_span[0])
+    t0 = float(t_span[0])
     tf = float(t_span[1])
-    record_times = np.linspace(t, tf, max(2, n_record))
-    record_states = np.zeros((len(record_times), n_sp), dtype=np.int64)
-    record_states[0] = n
-    next_record = 1
-    success = True
+    record_times = np.linspace(t0, tf, max(2, n_record))
 
-    while t < tf and next_record < len(record_times):
-        a = all_propensities(n)
-        a0 = float(a.sum())
-        if a0 <= 0.0:
-            break
-
-        if tau is not None:
-            dt = float(tau)
-        else:
-            dt = adaptive_tau(n, a)
-
-        # Cap the step to the next recording time so we don't skip past it.
-        dt = min(dt, tf - t, record_times[next_record] - t)
-        if dt <= 0:
-            dt = tf - t
-
-        # Sample firing counts
-        firings = rng.poisson(a * dt)
-
-        # Provisional new state — reject if it goes negative
-        delta = firings @ change_matrix
-        n_new = n + delta
-        if (n_new < 0).any():
-            # Leap rejection: fall back to one exact SSA step
-            r1, r2 = rng.random(), rng.random()
-            ssa_dt = -math.log(max(r1, 1e-300)) / a0
-            if t + ssa_dt > tf:
-                t = tf
-                break
-            cum = 0.0
-            threshold = r2 * a0
-            chosen = len(reactions) - 1
-            for j in range(len(reactions)):
-                cum += a[j]
-                if cum >= threshold:
-                    chosen = j
-                    break
-            n = n + change_matrix[chosen]
-            t = t + ssa_dt
-        else:
-            n = n_new
-            t = t + dt
-
-        # Snapshot at any recording times we've crossed
-        while next_record < len(record_times) and record_times[next_record] <= t:
-            record_states[next_record] = n
-            next_record += 1
-
-    # Fill any remaining slots with the last state
-    for i in range(next_record, len(record_times)):
-        record_states[i] = n
+    # Adaptive (fixed_tau<=0) or fixed-step tau-leap, JIT-compiled when numba is
+    # present, otherwise an equivalent pure-Python loop (see mantis._kernels).
+    record_states, success = tau_leap_kernel(
+        n0, c_eff, react_sp, react_co, change_matrix, t0, tf,
+        float(tau) if tau is not None else -1.0, float(epsilon),
+        record_times, normalize_seed(seed),
+    )
 
     counts_dict = {sp: record_states[:, i] for i, sp in enumerate(species)}
     conc_dict = {sp: record_states[:, i] / NA_V for i, sp in enumerate(species)}
