@@ -519,8 +519,12 @@ class CRNetwork:
         For a complex-balanced network the chemical master equation has a closed-form
         product-of-Poissons stationary distribution with means ``λ_i = N_A·V·c_i*``
         (``c*`` the complex-balanced equilibrium) — written down *from structure
-        alone, with no simulation*. With conservation laws it is that product
-        conditioned on the conserved totals (e.g. a Binomial for a single moiety).
+        alone, with no simulation*. For a fully enumerated finite conservation
+        class, it is conditioned on the communicating class reachable from the
+        initial counts; conserved totals alone may miss discrete invariants.
+        First-order interconversions with a single moiety give a Binomial.
+        Without conservation laws the full product-Poisson invariant law is
+        returned, not necessarily the initial-state-conditioned invariant law.
 
         Parameters
         ----------

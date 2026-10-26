@@ -30,6 +30,33 @@ def test_conditioned_probabilities_sum_to_one():
     assert total == pytest.approx(1.0, abs=1e-10)
 
 
+def test_conditioned_probability_is_zero_outside_support():
+    net = CRNetwork.from_string(["A <-> B"], rates={"A -> B": 1.0, "B -> A": 1.0})
+    sd = net.stationary_distribution({"A": 2, "B": 0}, volume_L=UNIT_VOL, initial_as="count")
+    assert sd.probability({"A": 0, "B": 0}) == 0.0
+    assert sd.probability({"A": 3, "B": 0}) == 0.0
+
+
+@pytest.mark.parametrize("initial_a, expected_states", [(2, {(2, 0), (0, 2)}), (1, {(1, 1)})])
+def test_stationary_support_preserves_discrete_communicating_class(initial_a, expected_states):
+    net = CRNetwork.from_string(["2A <-> 2B"], rates={"2A -> 2B": 1.0, "2B -> 2A": 1.0})
+    sd = net.stationary_distribution(
+        {"A": initial_a, "B": 2 - initial_a}, volume_L=UNIT_VOL, initial_as="count",
+    )
+    assert sd.is_exact and sd.is_conditioned
+    assert {tuple(row) for row in sd._states} == expected_states
+    assert sum(sd.probability({"A": a, "B": b}) for a, b in expected_states) == pytest.approx(1.0)
+    for a in range(3):
+        if (a, 2 - a) not in expected_states:
+            assert sd.probability({"A": a, "B": 2 - a}) == 0.0
+    values, probabilities = sd.marginal("A")
+    mean = values @ probabilities
+    variance = (values - mean) ** 2 @ probabilities
+    assert variance == pytest.approx(0.0 if initial_a == 1 else 1.0)
+    draws = sd.sample(size=40, seed=17)
+    assert set(zip(draws["A"], draws["B"])) <= expected_states
+
+
 def test_conditioned_expected_counts_match_binomial_mean():
     net = CRNetwork.from_string(["A <-> B"], rates={"A -> B": 2.0, "B -> A": 3.0})
     N = 40
@@ -69,3 +96,29 @@ def test_not_complex_balanced_raises():
     )
     with pytest.raises(ValueError, match="not complex-balanced"):
         mm.stationary_distribution({"E": 10, "S": 10}, volume_L=UNIT_VOL, initial_as="count")
+
+
+def test_catalyst_below_required_count_blocks_reachability():
+    net = CRNetwork.from_string(
+        ["A + 2C <-> B + 2C"],
+        rates={"A + 2C -> B + 2C": 1.0, "B + 2C -> A + 2C": 1.0},
+    )
+    sd = net.stationary_distribution(
+        {"A": 2, "B": 0, "C": 1}, volume_L=UNIT_VOL, initial_as="count",
+    )
+    assert {tuple(row) for row in sd._states} == {(2, 0, 1)}
+    assert sd.probability({"A": 2, "B": 0, "C": 1}) == pytest.approx(1.0)
+    assert sd.probability({"A": 0, "B": 2, "C": 1}) == 0.0
+
+
+def test_chemostatted_catalyst_uses_fixed_concentration_not_count_threshold():
+    net = CRNetwork.from_string(
+        ["A + 2C <-> B + 2C"],
+        rates={"A + 2C -> B + 2C": 1.0, "B + 2C -> A + 2C": 1.0},
+        chemostatted={"C": 1.0},
+    )
+    sd = net.stationary_distribution(
+        {"A": 2, "B": 0}, volume_L=UNIT_VOL, initial_as="count",
+    )
+    assert {tuple(row) for row in sd._states} == {(0, 2), (1, 1), (2, 0)}
+    assert sd.probability({"A": 1, "B": 1}) == pytest.approx(0.5)

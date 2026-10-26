@@ -678,8 +678,13 @@ inconclusive (the test is a sufficient condition).
 
 For a **complex-balanced** network, Anderson–Craciun–Kurtz (2010) give the *exact*
 chemical-master-equation stationary distribution in closed form — a product of Poissons
-with means `λᵢ = N_A·V·cᵢ*` (`c*` the Birch point), conditioned on the conserved totals.
-For a single moiety this is exactly a Binomial.
+with means `λᵢ = N_A·V·cᵢ*` (`c*` the Birch point). For a completely enumerated finite
+conservation class, the product is conditioned on the communicating class reachable
+from the initial counts, and probabilities outside that support are zero. Conserved
+totals alone need not determine that class: `2A <-> 2B` also preserves parity.
+For first-order interconversions with one conserved moiety this reduces to a Binomial.
+Without conservation laws the API retains the full product-Poisson invariant law;
+that invariant law need not be unique or conditioned on the initial communicating class.
 
 ```python
 rn = CRNetwork.from_string(["A <-> B"], rates={"A -> B": 2.0, "B -> A": 3.0})

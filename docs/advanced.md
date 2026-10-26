@@ -189,9 +189,13 @@ schlogl.is_multistationary({"X": 0.5})   # True at k = 11 (three steady states)
 
 For a complex-balanced network the chemical master equation has an *exact* stationary
 distribution in closed form (ACK, *Bull. Math. Biol.* 2010): a product of independent
-Poissons with means $\lambda_i = N_A V c_i^*$, supported on the reachable state space.
-With conservation laws it is that product conditioned on the conserved totals — a
-Binomial for a single moiety. You can therefore **write down the stationary
+Poissons with means $\lambda_i = N_A V c_i^*$. A completely enumerated finite
+conservation class is restricted further to states reachable from the initial counts.
+The conditioning can include discrete invariants beyond the conserved totals — it is
+a Binomial for first-order interconversions with a single moiety. Discrete invariants
+such as parity can split one conserved-total class into several communicating classes.
+With no conservation laws the API returns the full product-Poisson invariant law,
+which need not be the initial-state-conditioned law. You can therefore **write down the stationary
 distribution from structure alone, with no simulation**.
 
 ```python

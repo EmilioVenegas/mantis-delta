@@ -8,11 +8,12 @@ equilibrium scaled to molecule counts:
 
     π(x) = M · Π_i  λ_i^{x_i} / x_i!,        λ_i = (N_A · V) · c_i*,
 
-supported on the reachable state space (the stoichiometric compatibility class).
-With no conservation laws the state space is all of ℤ≥0ⁿ and π factorises into
-independent ``Poisson(λ_i)``; with conservation laws π is that product *conditioned*
-on the conserved totals (for a single moiety this is exactly a Binomial /
-multinomial).  This lets you write the stationary distribution down **from network
+For a fully enumerated finite conservation class, the product is restricted to
+the communicating class reachable from the initial counts. Linear conservation
+laws alone need not determine that class (for example, 2A ⇌ 2B preserves parity).
+Without conservation laws this API returns the full independent-Poisson invariant
+law, which need not be the unique or initial-state-conditioned invariant law.
+This lets you write the stationary distribution down **from network
 structure alone — no simulation** — for any weakly reversible deficiency-zero
 network, the regime where SSA is noisiest.
 """
@@ -80,6 +81,50 @@ def _enumerate_class(cons_vectors, cons_totals, n_species, max_states):
     return np.array(states, dtype=np.int64).reshape(-1, n_species), True
 
 
+def _reachable_finite_class(states, n0, reactions, species, rate_values, chem):
+    """Select the reachable component of a completely enumerated finite class.
+
+    Only integer reaction enabling is needed; propensity magnitudes and volume
+    scaling do not affect reachability. Reuse the FSP state traversal, but avoid
+    numerical propensity underflow when deciding whether an edge exists.
+    """
+    from .fsp import _enumerate_reachable
+
+    sp_idx = {name: i for i, name in enumerate(species)}
+    change = np.zeros((len(reactions), len(species)), dtype=np.int64)
+    requirements = []
+    active = []
+    for j, rxn in enumerate(reactions):
+        required = []
+        enabled = float(rate_values.get(rxn.rate_key, 0.0)) > 0.0
+        for name, coefficient in rxn.reactants:
+            if name in chem:
+                enabled = enabled and (coefficient == 0 or chem[name] > 0.0)
+            else:
+                i = sp_idx[name]
+                required.append((i, coefficient))
+                change[j, i] -= coefficient
+        for name, coefficient in rxn.products:
+            if name in sp_idx:
+                change[j, sp_idx[name]] += coefficient
+        requirements.append(required)
+        active.append(enabled)
+
+    def enabled_reactions(counts):
+        return np.array([
+            live and all(counts[i] >= coefficient for i, coefficient in required)
+            for live, required in zip(active, requirements)
+        ], dtype=bool)
+
+    reachable, index, truncated = _enumerate_reachable(
+        n0, change, enabled_reactions, max_states=len(states),
+    )
+    allowed = {tuple(int(v) for v in row) for row in states}
+    if truncated or any(tuple(int(v) for v in row) not in allowed for row in reachable):
+        raise ValueError("Reachable states exceed the enumerated conservation class.")
+    return states[[tuple(int(v) for v in row) in index for row in states]]
+
+
 @dataclass
 class StationaryDistribution:
     """Exact product-form stationary distribution of a complex-balanced network.
@@ -104,6 +149,7 @@ class StationaryDistribution:
     is_exact: bool
     _states: np.ndarray | None = field(default=None, repr=False)
     _logZ: float | None = field(default=None, repr=False)
+    _support: set[tuple[int, ...]] | None = field(default=None, init=False, repr=False)
 
     # ── core ────────────────────────────────────────────────────────────────────
     def poisson_means(self) -> dict[str, float]:
@@ -127,6 +173,10 @@ class StationaryDistribution:
             # Could not enumerate the class → independent-Poisson approximation.
             return float(np.prod([poisson.pmf(xi, li)
                                   for xi, li in zip(x, self.means)]))
+        if self._support is None:
+            self._support = {tuple(int(v) for v in row) for row in self._states}
+        if tuple(int(v) for v in x) not in self._support:
+            return 0.0
         from scipy.special import logsumexp
         if self._logZ is None:
             self._logZ = float(logsumexp([self._log_weight(s) for s in self._states]))
@@ -225,6 +275,10 @@ def stationary_distribution(
         cons_totals = [float(v @ n0) for v in cons_vectors]
         states, exact = _enumerate_class(cons_vectors, cons_totals, len(species), max_states)
         is_exact = exact
+        if exact:
+            states = _reachable_finite_class(
+                states, n0, reactions, species, rate_values, chem,
+            )
 
     return StationaryDistribution(
         species=list(species),
